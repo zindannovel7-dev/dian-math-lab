@@ -750,221 +750,222 @@ export default function DianMathLabApp() {
                             <span className="px-3 py-1 bg-white border border-sky-200 rounded-xl text-xs font-bold text-sky-900">Siswa: {tutorStudents.length}</span>
                             <span className="px-3 py-1 bg-white border border-sky-200 rounded-xl text-xs font-bold text-sky-900">Jadwal: {tutorSchedules.length}</span>
                             <span className="px-3 py-1 bg-white border border-sky-200 rounded-xl text-xs font-bold text-sky-900">Presensi: {tutorPresences.length}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold text-sky-900">Daftar Siswa Binaan:</p>
+                          {tutorStudents.length === 0 ? (
+                            <p className="text-xs text-slate-400 italic">Belum ada siswa yang didaftarkan oleh tutor ini.</p>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              {tutorStudents.map(st => (
+                                <div key={st.id} className="p-3 bg-white rounded-2xl border border-sky-100 text-xs shadow-xs flex justify-between items-center">
+                                  <div>
+                                    <p className="font-bold text-slate-800">{st.full_name}</p>
+                                    <p className="text-[10px] text-slate-500">{st.grade} • {st.subject}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-                      <div className="space-y-2">
-                        <p className="text-xs font-bold text-sky-900">Daftar Siswa Binaan:</p>
-                        {tutorStudents.length === 0 ? (
-                          <p className="text-xs text-slate-400 italic">Belum ada siswa yang didaftarkan oleh tutor ini.</p>
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {tutorStudents.map(st => (
-                              <div key={st.id} className="p-3 bg-white rounded-2xl border border-sky-100 text-xs shadow-xs flex justify-between items-center">
-                                <div>
-                                  <p className="font-bold text-slate-800">{st.full_name}</p>
-                                  <p className="text-[10px] text-slate-500">{st.grade} • {st.subject}</p>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
+              <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                <div>
+                  <h3 className="text-lg font-black text-sky-900">Manajemen Semua Akun & Hak Akses</h3>
+                  <p className="text-xs text-slate-500">Ubah role atau hapus akun pengguna di database.</p>
+                </div>
+                <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
+                  {allProfiles.map((p) => (
+                    <div key={p.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
+                      <div>
+                        <p className="font-bold text-xs text-slate-900">{p.full_name || 'Tanpa Nama'} ({p.email})</p>
+                        <p className="text-[10px] text-sky-600 font-bold uppercase">Role: {p.role}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select value={p.role || 'client'} onChange={(e) => handleUpdateUserRole(p.id, e.target.value)} className="px-3 py-1.5 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
+                          <option value="client">Klien</option>
+                          <option value="tutor">Tutor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        {p.id !== session.user.id && (
+                          <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
                         )}
+                      </div>
                     </div>
-                  </div>
-                );
+                  ))}
+                </div>
               </div>
             </div>
-
-            <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
-              <div>
-                <h3 className="text-lg font-black text-sky-900">Manajemen Semua Akun & Hak Akses</h3>
-                <p className="text-xs text-slate-500">Ubah role atau hapus akun pengguna di database.</p>
-              </div>
-              <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
-                {allProfiles.map((p) => (
-                  <div key={p.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
-                    <div>
-                      <p className="font-bold text-xs text-slate-900">{p.full_name || 'Tanpa Nama'} ({p.email})</p>
-                      <p className="text-[10px] text-sky-600 font-bold uppercase">Role: {p.role}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <select value={p.role || 'client'} onChange={(e) => handleUpdateUserRole(p.id, e.target.value)} className="px-3 py-1.5 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
-                        <option value="client">Klien</option>
-                        <option value="tutor">Tutor</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      {p.id !== session.user.id && (
-                        <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
           )}
 
           {/* MENU DATA SISWA & PINDAH TUTOR */}
           {activeMenu === 'students' && (userRole === 'tutor' || userRole === 'admin') && (
             <div className="space-y-6 transition-all duration-500 ease-in-out">
-            <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-black text-sky-900">Manajemen Data Siswa & Pindah Tutor</h3>
-                  <p className="text-xs text-slate-500">
-                    {userRole === 'admin' ? 'Super Admin dapat melihat dan memindahkan siswa antar tutor.' : 'Siswa yang Anda daftarkan hanya dapat diakses dan dikelola oleh akun Anda sendiri.'}
-                  </p>
+              <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-black text-sky-900">Manajemen Data Siswa & Pindah Tutor</h3>
+                    <p className="text-xs text-slate-500">
+                      {userRole === 'admin' ? 'Super Admin dapat melihat dan memindahkan siswa antar tutor.' : 'Siswa yang Anda daftarkan hanya dapat diakses dan dikelola oleh akun Anda sendiri.'}
+                    </p>
+                  </div>
+                  <button onClick={() => setIsAddingStudent(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Siswa</button>
                 </div>
-                <button onClick={() => setIsAddingStudent(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Siswa</button>
-              </div>
 
-              {isAddingStudent && (
-                <form onSubmit={handleAddStudent} className="bg-sky-50/50 p-6 rounded-2xl border border-sky-200 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Nama Lengkap Siswa</label>
-                      <input type="text" placeholder="Contoh: Budi Santoso" value={inputName} onChange={(e) => setInputName(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Email Siswa (Akun Login)</label>
-                      <input type="email" placeholder="budi@email.com" value={inputEmail} onChange={(e) => setInputEmail(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Jenjang / Grade Siswa</label>
-                      <select value={inputGrade} onChange={(e) => setInputGrade(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white">
-                        <optgroup label="Sekolah Dasar (SD)">
-                          <option value="Kelas 1 SD">Kelas 1 SD</option>
-                          <option value="Kelas 2 SD">Kelas 2 SD</option>
-                          <option value="Kelas 3 SD">Kelas 3 SD</option>
-                          <option value="Kelas 4 SD">Kelas 4 SD</option>
-                          <option value="Kelas 5 SD">Kelas 5 SD</option>
-                          <option value="Kelas 6 SD">Kelas 6 SD</option>
-                        </optgroup>
-                        <optgroup label="Sekolah Menengah Pertama (SMP)">
-                          <option value="Kelas 7 SMP">Kelas 7 SMP</option>
-                          <option value="Kelas 8 SMP">Kelas 8 SMP</option>
-                          <option value="Kelas 9 SMP">Kelas 9 SMP</option>
-                        </optgroup>
-                        <optgroup label="Sekolah Menengah Atas/Kejuruan (SMA/SMK)">
-                          <option value="Kelas 10 SMA">Kelas 10 SMA</option>
-                          <option value="Kelas 11 SMA">Kelas 11 SMA</option>
-                          <option value="Kelas 12 SMA">Kelas 12 SMA</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Fokus Pembelajaran / Materi</label>
-                      <input type="text" placeholder="Contoh: Aritmatika / Aljabar Dasar" value={inputSubject} onChange={(e) => setInputSubject(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={() => setIsAddingStudent(false)} className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">Batal</button>
-                    <button type="submit" className="px-5 py-2 bg-sky-500 text-white text-xs font-bold rounded-xl">Simpan Siswa</button>
-                  </div>
-                </form>
-              )}
-
-              <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
-                {students.map((s) => {
-                  const currentTutor = tutorsList.find(t => t.id === s.tutor_id);
-                  return (
-                    <div key={s.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-sky-50/40">
+                {isAddingStudent && (
+                  <form onSubmit={handleAddStudent} className="bg-sky-50/50 p-6 rounded-2xl border border-sky-200 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                          {s.full_name} <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">{s.grade}</span>
-                        </h4>
-                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Mail size={12} className="text-sky-400" /> {s.email || 'Email belum diatur'} • Fokus: <strong>{s.subject || 'Matematika Umum'}</strong> • Tutor: <strong>{currentTutor?.full_name || 'Tutor Utama'}</strong></p>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Nama Lengkap Siswa</label>
+                        <input type="text" placeholder="Contoh: Budi Santoso" value={inputName} onChange={(e) => setInputName(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        {userRole === 'admin' && (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-bold text-slate-600">Pindah Tutor:</span>
-                            <select value={s.tutor_id || ''} onChange={(e) => handleTransferStudentTutor(s.id, e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
-                              <option value="">-- Pilih Tutor --</option>
-                              {tutorsList.map(t => <option key={t.id} value={t.id}>{t.full_name || t.email}</option>)}
-                            </select>
-                          </div>
-                        )}
-                        <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
+                      <div>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Email Siswa (Akun Login)</label>
+                        <input type="email" placeholder="budi@email.com" value={inputEmail} onChange={(e) => setInputEmail(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
                       </div>
                     </div>
-                  );
-                })}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Jenjang / Grade Siswa</label>
+                        <select value={inputGrade} onChange={(e) => setInputGrade(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white">
+                          <optgroup label="Sekolah Dasar (SD)">
+                            <option value="Kelas 1 SD">Kelas 1 SD</option>
+                            <option value="Kelas 2 SD">Kelas 2 SD</option>
+                            <option value="Kelas 3 SD">Kelas 3 SD</option>
+                            <option value="Kelas 4 SD">Kelas 4 SD</option>
+                            <option value="Kelas 5 SD">Kelas 5 SD</option>
+                            <option value="Kelas 6 SD">Kelas 6 SD</option>
+                          </optgroup>
+                          <optgroup label="Sekolah Menengah Pertama (SMP)">
+                            <option value="Kelas 7 SMP">Kelas 7 SMP</option>
+                            <option value="Kelas 8 SMP">Kelas 8 SMP</option>
+                            <option value="Kelas 9 SMP">Kelas 9 SMP</option>
+                          </optgroup>
+                          <optgroup label="Sekolah Menengah Atas/Kejuruan (SMA/SMK)">
+                            <option value="Kelas 10 SMA">Kelas 10 SMA</option>
+                            <option value="Kelas 11 SMA">Kelas 11 SMA</option>
+                            <option value="Kelas 12 SMA">Kelas 12 SMA</option>
+                          </optgroup>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Fokus Pembelajaran / Materi</label>
+                        <input type="text" placeholder="Contoh: Aritmatika / Aljabar Dasar" value={inputSubject} onChange={(e) => setInputSubject(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setIsAddingStudent(false)} className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">Batal</button>
+                      <button type="submit" className="px-5 py-2 bg-sky-500 text-white text-xs font-bold rounded-xl">Simpan Siswa</button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
+                  {students.map((s) => {
+                    const currentTutor = tutorsList.find(t => t.id === s.tutor_id);
+                    return (
+                      <div key={s.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-sky-50/40">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            {s.full_name} <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">{s.grade}</span>
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Mail size={12} className="text-sky-400" /> {s.email || 'Email belum diatur'} • Fokus: <strong>{s.subject || 'Matematika Umum'}</strong> • Tutor: <strong>{currentTutor?.full_name || 'Tutor Utama'}</strong></p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {userRole === 'admin' && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-bold text-slate-600">Pindah Tutor:</span>
+                              <select value={s.tutor_id || ''} onChange={(e) => handleTransferStudentTutor(s.id, e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
+                                <option value="">-- Pilih Tutor --</option>
+                                {tutorsList.map(t => <option key={t.id} value={t.id}>{t.full_name || t.email}</option>)}
+                              </select>
+                            </div>
+                          )}
+                          <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
           )}
 
           {/* MENU JADWAL */}
           {activeMenu === 'schedule' && (userRole === 'tutor' || userRole === 'admin') && (
             <div className="space-y-6 transition-all duration-500 ease-in-out">
-            <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-black text-sky-900 mb-1">Manajemen Jadwal Les</h3>
-                  <p className="text-xs text-slate-500">Jadwal bimbingan belajar khusus privat Anda.</p>
+              <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-black text-sky-900 mb-1">Manajemen Jadwal Les</h3>
+                    <p className="text-xs text-slate-500">Jadwal bimbingan belajar khusus privat Anda.</p>
+                  </div>
+                  <button onClick={() => setIsAddingSchedule(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Jadwal</button>
                 </div>
-                <button onClick={() => setIsAddingSchedule(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Jadwal</button>
-              </div>
 
-              {isAddingSchedule && (
-                <form onSubmit={handleAddSchedule} className="bg-sky-50/50 p-6 rounded-2xl border border-sky-200 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Pilih Siswa</label>
-                      <select value={schedStudentId} onChange={(e) => setSchedStudentId(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required>
-                        <option value="">-- Pilih Siswa --</option>
-                        {students.map((s) => (<option key={s.id} value={s.id}>{s.full_name} ({s.grade})</option>))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Hari Bimbel</label>
-                      <select value={schedDay} onChange={(e) => setSchedDay(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white">
-                        <option value="Senin">Senin</option><option value="Selasa">Selasa</option><option value="Rabu">Rabu</option><option value="Kamis">Kamis</option><option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option><option value="Minggu">Minggu</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Waktu Mulai</label>
-                      <input type="time" value={schedStartTime} onChange={(e) => setSchedStartTime(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-sky-900 mb-1">Waktu Selesai</label>
-                      <input type="time" value={schedEndTime} onChange={(e) => setSchedEndTime(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={() => setIsAddingSchedule(false)} className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">Batal</button>
-                    <button type="submit" className="px-5 py-2 bg-sky-500 text-white text-xs font-bold rounded-xl">Simpan Jadwal</button>
-                  </div>
-                </form>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {schedules.map((item) => {
-                  const studentObj = students.find(s => s.id === item.student_id);
-                  return (
-                    <div key={item.id} className="p-5 rounded-2xl border border-sky-100 flex justify-between items-center bg-sky-50/30">
+                {isAddingSchedule && (
+                  <form onSubmit={handleAddSchedule} className="bg-sky-50/50 p-6 rounded-2xl border border-sky-200 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-slate-900 text-sm">{studentObj?.full_name || 'Siswa Umum'}</h4>
-                          <span className="text-[11px] font-bold text-sky-700 bg-white px-2.5 py-0.5 rounded-full border border-sky-200">{item.day_of_week}</span>
-                        </div>
-                        <p className="text-xs text-slate-600 mt-1.5 flex items-center gap-1.5">
-                          <Clock size={14} className="text-sky-500" /> Pukul <strong>{item.start_time}</strong> s.d <strong>{item.end_time}</strong>
-                        </p>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Pilih Siswa</label>
+                        <select value={schedStudentId} onChange={(e) => setSchedStudentId(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required>
+                          <option value="">-- Pilih Siswa --</option>
+                          {students.map((s) => (<option key={s.id} value={s.id}>{s.full_name} ({s.grade})</option>))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Hari Bimbel</label>
+                        <select value={schedDay} onChange={(e) => setSchedDay(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white">
+                          <option value="Senin">Senin</option><option value="Selasa">Selasa</option><option value="Rabu">Rabu</option><option value="Kamis">Kamis</option><option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option><option value="Minggu">Minggu</option>
+                        </select>
+                      </div>
                     </div>
-                    <button onClick={() => handleDeleteSchedule(item.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
-                  </div>
-                );
-                })}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Waktu Mulai</label>
+                        <input type="time" value={schedStartTime} onChange={(e) => setSchedStartTime(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-sky-900 mb-1">Waktu Selesai</label>
+                        <input type="time" value={schedEndTime} onChange={(e) => setSchedEndTime(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setIsAddingSchedule(false)} className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">Batal</button>
+                      <button type="submit" className="px-5 py-2 bg-sky-500 text-white text-xs font-bold rounded-xl">Simpan Jadwal</button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {schedules.map((item) => {
+                    const studentObj = students.find(s => s.id === item.student_id);
+                    return (
+                      <div key={item.id} className="p-5 rounded-2xl border border-sky-100 flex justify-between items-center bg-sky-50/30">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-slate-900 text-sm">{studentObj?.full_name || 'Siswa Umum'}</h4>
+                            <span className="text-[11px] font-bold text-sky-700 bg-white px-2.5 py-0.5 rounded-full border border-sky-200">{item.day_of_week}</span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-1.5 flex items-center gap-1.5">
+                            <Clock size={14} className="text-sky-500" /> Pukul <strong>{item.start_time}</strong> s.d <strong>{item.end_time}</strong>
+                          </p>
+                        </div>
+                        <button onClick={() => handleDeleteSchedule(item.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
-          </div>
           )}
 
           {/* MENU PRESENSI */}
@@ -1061,13 +1062,13 @@ export default function DianMathLabApp() {
                           {userRole === 'client' && item.status === 'Pending' && (
                             <button onClick={() => handleVerifyPresence(item.id)} className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-bold">Konfirmasi Kehadiran</button>
                           )}
-                    </div>
-                  </div>
-                ))
-                )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
           )}
 
           {/* PROFIL */}

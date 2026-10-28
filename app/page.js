@@ -46,8 +46,8 @@ export default function DianMathLabApp() {
   // State Modal Interaktif Custom yang Dipercantik
   const [modalConfig, setModalConfig] = useState({ show: false, title: '', message: '', type: 'info', onConfirm: null });
 
-  // State Floating WhatsApp Menu
-  const [showWaMenu, setShowWaMenu] = useState(false);
+  // State Floating WhatsApp Menu (Langsung muncul otomatis di awal)
+  const [showWaMenu, setShowWaMenu] = useState(true);
 
   // State Data Siswa
   const [students, setStudents] = useState([]);

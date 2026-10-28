@@ -513,7 +513,7 @@ export default function DianMathLabApp() {
         <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-xl border border-sky-100 rounded-3xl p-8 shadow-2xl space-y-6 transition-all duration-700 ease-in-out transform hover:scale-[1.01]">
           <div className="text-center space-y-2">
             <div className="inline-flex p-3 bg-sky-500/10 border border-sky-200 rounded-2xl text-sky-600 mb-1 animate-pulse">
-              <Sparkles size="{24}"/>
+              <Sparkles size={24} />
             </div>
             <h1 className="text-2xl font-black tracking-wider text-sky-900">Dian Math Lab</h1>
             <p className="text-xs text-sky-600 font-medium">Sistem Les Privat Matematika • <strong>NZ Production © 2026</strong></p>
@@ -530,17 +530,17 @@ export default function DianMathLabApp() {
               <div>
                 <label className="block text-xs font-bold text-sky-900 mb-1.5">Email Terdaftar</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-3 text-sky-400" size="{16}"/>
+                  <Mail className="absolute left-3.5 top-3 text-sky-400" size={16} />
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" className="w-full pl-10 pr-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 focus:outline-none focus:border-sky-500 transition-all duration-500" required />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-sky-900 mb-1.5">Kata Sandi</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3 text-sky-400" size="{16}"/>
+                  <Lock className="absolute left-3.5 top-3 text-sky-400" size={16} />
                   <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full pl-10 pr-10 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 focus:outline-none focus:border-sky-500 transition-all duration-500" required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-3 text-sky-500 hover:text-sky-700">
-                    {showPassword ? <EyeOff size="{16}"/> : <Eye size="{16}"/>}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
@@ -559,7 +559,7 @@ export default function DianMathLabApp() {
           {authMode === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4 transition-all duration-500 ease-in-out">
               <div className="bg-sky-50 p-3 rounded-2xl border border-sky-200 text-xs text-sky-900 space-y-1">
-                <p className="font-bold flex items-center gap-1"><Sparkles className="text-sky-600" size="{14}"/> Informasi Aktivasi Email:</p>
+                <p className="font-bold flex items-center gap-1"><Sparkles className="text-sky-600" size={14} /> Informasi Aktivasi Email:</p>
                 <p className="text-[11px] text-slate-600">Setelah mendaftar, sistem akan mengirimkan <strong>tautan aktivasi</strong> ke email Anda. Pastikan untuk membuka email dan klik tautan tersebut agar akun dapat digunakan untuk login.</p>
               </div>
 
@@ -623,37 +623,37 @@ export default function DianMathLabApp() {
         <div>
           <div className="px-6 py-6 border-b border-sky-100 flex items-center justify-between bg-sky-50/50">
             <div>
-              <h1 className="text-base font-black text-sky-900 flex items-center gap-2"><Sparkles className="text-sky-500" size="{16}"/> Dian Math Lab</h1>
+              <h1 className="text-base font-black text-sky-900 flex items-center gap-2"><Sparkles className="text-sky-500" size={16} /> Dian Math Lab</h1>
               <p className="text-[10px] text-sky-600 font-bold uppercase">NZ Production © 2026</p>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-500 hover:text-slate-800"><X size="{20}"/></button>
+            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-500 hover:text-slate-800"><X size={20} /></button>
           </div>
 
           <nav className="px-4 py-6 space-y-2">
             <button onClick={() => setActiveMenu('dashboard')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-500 ease-in-out ${activeMenu === 'dashboard' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'hover:bg-sky-50 text-slate-600'}`}>
-              <div className="flex items-center gap-3"><Home size="{18}"/> Dashboard Utama</div>
+              <div className="flex items-center gap-3"><Home size={18} /> Dashboard Utama</div>
             </button>
             
             {userRole === 'admin' && (
               <button onClick={() => setActiveMenu('admin-panel')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-500 ease-in-out ${activeMenu === 'admin-panel' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'hover:bg-sky-50 text-slate-600'}`}>
-                <div className="flex items-center gap-3"><Shield size="{18}"/> Panel Super Admin & Tutor ({allProfiles.length})</div>
+                <div className="flex items-center gap-3"><Shield size={18} /> Panel Super Admin & Tutor ({allProfiles.length})</div>
               </button>
             )}
 
             {(userRole === 'tutor' || userRole === 'admin') && (
               <>
                 <button onClick={() => setActiveMenu('students')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-500 ease-in-out ${activeMenu === 'students' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'hover:bg-sky-50 text-slate-600'}`}>
-                  <div className="flex items-center gap-3"><Users size="{18}"/> Data Siswa ({students.length})</div>
+                  <div className="flex items-center gap-3"><Users size={18} /> Data Siswa ({students.length})</div>
                 </button>
                 <button onClick={() => setActiveMenu('schedule')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-500 ease-in-out ${activeMenu === 'schedule' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'hover:bg-sky-50 text-slate-600'}`}>
-                  <div className="flex items-center gap-3"><Calendar size="{18}"/> Manajemen Jadwal ({schedules.length})</div>
+                  <div className="flex items-center gap-3"><Calendar size={18} /> Manajemen Jadwal ({schedules.length})</div>
                 </button>
               </>
             )}
 
             <button onClick={() => setActiveMenu('presence')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-500 ease-in-out ${activeMenu === 'presence' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'hover:bg-sky-50 text-slate-600'}`}>
               <div className="flex items-center gap-3">
-                <CheckSquare size="{18}"/> {(userRole === 'tutor' || userRole === 'admin') ? 'Input Presensi Tentor' : 'Konfirmasi Kehadiran'}
+                <CheckSquare size={18} /> {(userRole === 'tutor' || userRole === 'admin') ? 'Input Presensi Tentor' : 'Konfirmasi Kehadiran'}
               </div>
               {userRole === 'client' && pendingCount > 0 && (
                 <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full animate-bounce">
@@ -663,7 +663,7 @@ export default function DianMathLabApp() {
             </button>
 
             <button onClick={() => setActiveMenu('profile')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-500 ease-in-out ${activeMenu === 'profile' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' : 'hover:bg-sky-50 text-slate-600'}`}>
-              <div className="flex items-center gap-3"><Settings size="{18}"/> Profil & Ubah Sandi</div>
+              <div className="flex items-center gap-3"><Settings size={18} /> Profil & Ubah Sandi</div>
             </button>
           </nav>
         </div>
@@ -677,7 +677,7 @@ export default function DianMathLabApp() {
             </div>
           </div>
           <button onClick={confirmLogout} className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-500">
-            <LogOut size="{14}"/> Keluar (Logout)
+            <LogOut size={14} /> Keluar (Logout)
           </button>
         </div>
       </aside>
@@ -694,11 +694,11 @@ export default function DianMathLabApp() {
           <div className="flex items-center gap-3">
             {userRole === 'client' && pendingCount > 0 && (
               <span className="text-xs bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl font-bold border border-amber-200 flex items-center gap-1.5 animate-pulse">
-                <Bell className="text-amber-600" size="{14}"/> Ada {pendingCount} Jadwal Perlu Dikonfirmasi!
+                <Bell className="text-amber-600" size={14} /> Ada {pendingCount} Jadwal Perlu Dikonfirmasi!
               </span>
             )}
             <span className="text-xs bg-sky-100 text-sky-800 px-3.5 py-1.5 rounded-xl font-bold border border-sky-200 flex items-center gap-1.5">
-              <UserCheck size="{14}"/> {userRole.toUpperCase()}
+              <UserCheck size={14} /> {userRole.toUpperCase()}
             </span>
           </div>
         </header>
@@ -717,7 +717,7 @@ export default function DianMathLabApp() {
                 <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Siswa Terdaftar</span><div className="mt-2 text-3xl font-black">{students.length}</div></div>
                 <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Jadwal Aktif</span><div className="mt-2 text-3xl font-black text-blue-600">{clientSchedules.length}</div></div>
                 <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Presensi Pending</span><div className="mt-2 text-3xl font-black text-amber-500">{pendingCount}</div></div>
-                <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Status Akun</span><div className="mt-2 text-base font-bold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size="{18}"/> Terisolasi Aman</div></div>
+                <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Status Akun</span><div className="mt-2 text-base font-bold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size={18} /> Terisolasi Aman</div></div>
               </div>
             </div>
           )}
@@ -728,7 +728,7 @@ export default function DianMathLabApp() {
               <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
                 <div>
                   <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
-                    <Shield className="text-sky-500" size="{20}"/> Rekapitulasi Per Tutor & Kontrol Super Admin
+                    <Shield className="text-sky-500" size={20} /> Rekapitulasi Per Tutor & Kontrol Super Admin
                   </h3>
                   <p className="text-xs text-slate-500">Melihat rincian siswa, jadwal, dan aktivitas yang dikelola oleh masing-masing tutor secara terpisah.</p>
                 </div>
@@ -798,7 +798,7 @@ export default function DianMathLabApp() {
                           <option value="admin">Admin</option>
                         </select>
                         {p.id !== session.user.id && (
-                          <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size="{14}"/></button>
+                          <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
                         )}
                       </div>
                     </div>
@@ -819,7 +819,7 @@ export default function DianMathLabApp() {
                     {userRole === 'admin' ? 'Super Admin dapat melihat dan memindahkan siswa antar tutor.' : 'Siswa yang Anda daftarkan hanya dapat diakses dan dikelola oleh akun Anda sendiri.'}
                   </p>
                 </div>
-                <button onClick={() => setIsAddingStudent(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size="{16}"/> Tambah Siswa</button>
+                <button onClick={() => setIsAddingStudent(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Siswa</button>
               </div>
 
               {isAddingStudent && (
@@ -879,7 +879,7 @@ export default function DianMathLabApp() {
                         <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                           {s.full_name} <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">{s.grade}</span>
                         </h4>
-                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Mail className="text-sky-400" size="{12}"/> {s.email || 'Email belum diatur'} • Fokus: <strong>{s.subject || 'Matematika Umum'}</strong> • Tutor: <strong>{currentTutor?.full_name || 'Tutor Utama'}</strong></p>
+                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Mail className="text-sky-400" size={12} /> {s.email || 'Email belum diatur'} • Fokus: <strong>{s.subject || 'Matematika Umum'}</strong> • Tutor: <strong>{currentTutor?.full_name || 'Tutor Utama'}</strong></p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -892,7 +892,7 @@ export default function DianMathLabApp() {
                             </select>
                           </div>
                         )}
-                        <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size="{16}"/></button>
+                        <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   );
@@ -911,7 +911,7 @@ export default function DianMathLabApp() {
                   <h3 className="text-lg font-black text-sky-900 mb-1">Manajemen Jadwal Les</h3>
                   <p className="text-xs text-slate-500">Jadwal bimbingan belajar khusus privat Anda.</p>
                 </div>
-                <button onClick={() => setIsAddingSchedule(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size="{16}"/> Tambah Jadwal</button>
+                <button onClick={() => setIsAddingSchedule(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Jadwal</button>
               </div>
 
               {isAddingSchedule && (
@@ -959,10 +959,10 @@ export default function DianMathLabApp() {
                           <span className="text-[11px] font-bold text-sky-700 bg-white px-2.5 py-0.5 rounded-full border border-sky-200">{item.day_of_week}</span>
                         </div>
                         <p className="text-xs text-slate-600 mt-1.5 flex items-center gap-1.5">
-                          <Clock className="text-sky-500" size="{14}"/> Pukul <strong>{item.start_time}</strong> s.d <strong>{item.end_time}</strong>
+                          <Clock className="text-sky-500" size={14} /> Pukul <strong>{item.start_time}</strong> s.d <strong>{item.end_time}</strong>
                         </p>
                       </div>
-                      <button onClick={() => handleDeleteSchedule(item.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size="{16}"/></button>
+                      <button onClick={() => handleDeleteSchedule(item.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
                     </div>
                   );
                 })}
@@ -1014,7 +1014,7 @@ export default function DianMathLabApp() {
                     </div>
                     <div className="flex justify-end pt-2">
                       <button type="submit" className="px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl text-xs font-bold shadow-lg flex items-center gap-2">
-                        <CheckSquare size="{16}"/> {editingPresenceId ? 'Simpan Perubahan' : 'Publikasikan Presensi'}
+                        <CheckSquare size={16} /> {editingPresenceId ? 'Simpan Perubahan' : 'Publikasikan Presensi'}
                       </button>
                     </div>
                   </form>
@@ -1050,17 +1050,17 @@ export default function DianMathLabApp() {
                           <p className="text-xs text-slate-600"><strong>Materi:</strong> {item.material}</p>
                         </div>
                         <div className="flex items-center gap-3 flex-wrap">
-                          <button onClick={() => addToCalendar(item)} className="px-3 py-2 bg-sky-100 text-sky-800 rounded-xl text-xs font-bold flex items-center gap-1.5"><CalendarPlus size="{14}"/> Kalender</button>
+                          <button onClick={() => addToCalendar(item)} className="px-3 py-2 bg-sky-100 text-sky-800 rounded-xl text-xs font-bold flex items-center gap-1.5"><CalendarPlus size={14} /> Kalender</button>
                           
                           {(userRole === 'tutor' || userRole === 'admin') && (
                             <>
-                              <button onClick={() => handleEditPresenceClick(item)} className="px-3 py-2 bg-amber-100 text-amber-800 rounded-xl text-xs font-bold flex items-center gap-1.5"><Edit3 size="{14}"/> Edit</button>
-                              <button onClick={() => handleDeletePresence(item.id)} className="px-3 py-2 bg-rose-100 text-rose-800 rounded-xl text-xs font-bold flex items-center gap-1.5"><Trash2 size="{14}"/> Hapus</button>
+                              <button onClick={() => handleEditPresenceClick(item)} className="px-3 py-2 bg-amber-100 text-amber-800 rounded-xl text-xs font-bold flex items-center gap-1.5"><Edit3 size={14} /> Edit</button>
+                              <button onClick={() => handleDeletePresence(item.id)} className="px-3 py-2 bg-rose-100 text-rose-800 rounded-xl text-xs font-bold flex items-center gap-1.5"><Trash2 size={14} /> Hapus</button>
                             </>
                           )}
 
                           <span className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${item.status === 'Terkonfirmasi' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {item.status === 'Terkonfirmasi' ? <CheckCircle2 size="{14}"/> : <Clock size="{14}"/>} {item.status}
+                            {item.status === 'Terkonfirmasi' ? <CheckCircle2 size={14} /> : <Clock size={14} />} {item.status}
                           </span>
                           {userRole === 'client' && item.status === 'Pending' && (
                             <button onClick={() => handleVerifyPresence(item.id)} className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-bold">Konfirmasi Kehadiran</button>
@@ -1109,7 +1109,7 @@ export default function DianMathLabApp() {
               {/* UBAH SANDI */}
               <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
                 <div>
-                  <h3 className="text-lg font-black text-sky-900 flex items-center gap-2"><KeyRound className="text-sky-500" size="{20}"/> Keamanan: Ubah Kata Sandi</h3>
+                  <h3 className="text-lg font-black text-sky-900 flex items-center gap-2"><KeyRound className="text-sky-500" size={20} /> Keamanan: Ubah Kata Sandi</h3>
                 </div>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div>
@@ -1131,7 +1131,7 @@ export default function DianMathLabApp() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all duration-500 ease-in-out">
           <div className="bg-white/95 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-sky-100 text-center space-y-4 transform transition-all duration-500 ease-in-out scale-100">
             <div className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center shadow-md mb-2 bg-gradient-to-tr from-sky-500 to-blue-600 text-white">
-              {modalConfig.type === 'success' ? <CheckCircle2 size="{24}"/> : <AlertCircle size="{24}"/>}
+              {modalConfig.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
             </div>
             <h3 className="text-lg font-black text-sky-900">{modalConfig.title}</h3>
             <p className="text-xs text-slate-600 leading-relaxed">{modalConfig.message}</p>

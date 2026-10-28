@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
-  Home,
+  Home, 
   Users, 
   Calendar, 
   CheckSquare, 

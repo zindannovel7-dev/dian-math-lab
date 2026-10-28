@@ -21,7 +21,6 @@ import {
   EyeOff,
   LogOut,
   Settings,
-  Filter,
   KeyRound,
   Bell,
   CalendarPlus,
@@ -50,7 +49,7 @@ export default function DianMathLabApp() {
   // State Floating WhatsApp Menu
   const [showWaMenu, setShowWaMenu] = useState(false);
 
-  // State Data Siswa (Dilengkapi kembali dengan input grade dari SD sampai SMA)
+  // State Data Siswa
   const [students, setStudents] = useState([]);
   const [inputName, setInputName] = useState('');
   const [inputEmail, setInputEmail] = useState('');
@@ -760,7 +759,7 @@ export default function DianMathLabApp() {
                           <p className="text-xs font-bold text-sky-900">Daftar Siswa Binaan:</p>
                           {tutorStudents.length === 0 ? (
                             <p className="text-xs text-slate-400 italic">Belum ada siswa yang didaftarkan oleh tutor ini.</p>
-                          ) : (
+                        ) : (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               {tutorStudents.map(st => (
                                 <div key={st.id} className="p-3 bg-white rounded-2xl border border-sky-100 text-xs shadow-xs flex justify-between items-center">
@@ -768,44 +767,44 @@ export default function DianMathLabApp() {
                                     <p className="font-bold text-slate-800">{st.full_name}</p>
                                     <p className="text-[10px] text-slate-500">{st.grade} • {st.subject}</p>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
-                <div>
-                  <h3 className="text-lg font-black text-sky-900">Manajemen Semua Akun & Hak Akses</h3>
-                  <p className="text-xs text-slate-500">Ubah role atau hapus akun pengguna di database.</p>
-                </div>
-                <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
-                  {allProfiles.map((p) => (
-                    <div key={p.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
-                      <div>
-                        <p className="font-bold text-xs text-slate-900">{p.full_name || 'Tanpa Nama'} ({p.email})</p>
-                        <p className="text-[10px] text-sky-600 font-bold uppercase">Role: {p.role}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <select value={p.role || 'client'} onChange={(e) => handleUpdateUserRole(p.id, e.target.value)} className="px-3 py-1.5 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
-                          <option value="client">Klien</option>
-                          <option value="tutor">Tutor</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                        {p.id !== session.user.id && (
-                          <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </div>
+
+            <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+              <div>
+                <h3 className="text-lg font-black text-sky-900">Manajemen Semua Akun & Hak Akses</h3>
+                <p className="text-xs text-slate-500">Ubah role atau hapus akun pengguna di database.</p>
+              </div>
+              <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
+                {allProfiles.map((p) => (
+                  <div key={p.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
+                    <div>
+                      <p className="font-bold text-xs text-slate-900">{p.full_name || 'Tanpa Nama'} ({p.email})</p>
+                      <p className="text-[10px] text-sky-600 font-bold uppercase">Role: {p.role}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select value={p.role || 'client'} onChange={(e) => handleUpdateUserRole(p.id, e.target.value)} className="px-3 py-1.5 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
+                        <option value="client">Klien</option>
+                        <option value="tutor">Tutor</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                      {p.id !== session.user.id && (
+                        <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
           )}
 
           {/* MENU DATA SISWA & PINDAH TUTOR */}
@@ -897,9 +896,9 @@ export default function DianMathLabApp() {
                     </div>
                   );
                 })}
-              </div>
             </div>
           </div>
+        </div>
           )}
 
           {/* MENU JADWAL */}

@@ -102,15 +102,17 @@ export default function DianMathLabApp() {
   const [presDuration, setPresDuration] = useState('2');
   const [editingPresenceId, setEditingPresenceId] = useState(null);
 
-  // --- STATE KHUSUS UTBK PK PM ---
+  // --- STATE UTBK PK PM (BEBAS / TANPA BATAS DROPDOWN) ---
   const [utbkQuestions, setUtbkQuestions] = useState([]);
   const [utbkMaterials, setUtbkMaterials] = useState([]);
   const [utbkInfos, setUtbkInfos] = useState([]);
   const [utbkHistory, setUtbkHistory] = useState([]);
-  const [selectedPackage, setSelectedPackage] = useState('Paket 1');
-  const [selectedSubtest, setSelectedSubtest] = useState('Penalaran Umum');
   
-  // Form Kelola Soal (Admin/Tentor)
+  // Filter / Pilihan Pengerjaan Siswa (Ketik Bebas)
+  const [filterPackageInput, setFilterPackageInput] = useState('Paket 1');
+  const [filterSubtestInput, setFilterSubtestInput] = useState('Penalaran Umum');
+  
+  // Form Kelola Soal (Admin/Tentor) - Menggunakan Input Ketik Bebas
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [qPackage, setQPackage] = useState('Paket 1');
   const [qSubtest, setQSubtest] = useState('Penalaran Umum');
@@ -371,13 +373,13 @@ export default function DianMathLabApp() {
     });
   };
 
-  // --- FITUR IZINKAN SISWA AKSES UTBK PK PM ---
+  // --- IZINKAN AKSES UTBK SISWA ---
   const handleToggleUtbkAccess = async (profileId, currentStatus) => {
     const newStatus = !currentStatus;
     const { error } = await supabase.from('profiles').update({ utbk_access: newStatus }).eq('id', profileId);
     if (!error) {
       fetchAppData(session);
-      showAlert('Berhasil', `Akses UTBK PK PM untuk siswa tersebut berhasil ${newStatus ? 'DIBERIKAN' : 'DICABUT'}.`, 'success');
+      showAlert('Berhasil', `Akses UTBK PK PM berhasil ${newStatus ? 'DIBERIKAN' : 'DICABUT'}.`, 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
@@ -389,13 +391,13 @@ export default function DianMathLabApp() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setQImage(reader.result); // Menyimpan base64 string gambar lokal
+        setQImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // --- MANAJEMEN SOAL UTBK (TAMBAH, EDIT, HAPUS) ---
+  // --- KELOLA SOAL UTBK (INPUT KETIK BEBAS TANPA BATAS) ---
   const handleSaveQuestion = async (e) => {
     e.preventDefault();
     if (!qText.trim()) {
@@ -404,8 +406,8 @@ export default function DianMathLabApp() {
     }
 
     const questionPayload = {
-      package_name: qPackage,
-      subtest: qSubtest,
+      package_name: qPackage.trim(),
+      subtest: qSubtest.trim(),
       question_text: qText,
       image_url: qImage || null,
       option_a: optA,
@@ -435,7 +437,7 @@ export default function DianMathLabApp() {
       } else {
         resetQuestionForm();
         fetchAppData(session);
-        showAlert('Berhasil', 'Soal UTBK baru berhasil ditambahkan ke database.', 'success');
+        showAlert('Berhasil', 'Soal UTBK baru berhasil ditambahkan.', 'success');
       }
     }
   };
@@ -462,7 +464,7 @@ export default function DianMathLabApp() {
   };
 
   const handleDeleteQuestion = (id) => {
-    showAlert('Konfirmasi Hapus', 'Hapus soal ini dari paket latihan?', 'warning', async () => {
+    showAlert('Konfirmasi Hapus', 'Hapus soal ini dari database?', 'warning', async () => {
       const { error } = await supabase.from('utbk_questions').delete().eq('id', id);
       closeModal();
       if (!error) {
@@ -474,7 +476,7 @@ export default function DianMathLabApp() {
     });
   };
 
-  // --- MANAJEMEN MATERI (ADMIN/TUTOR) ---
+  // --- KELOLA MATERI ---
   const handleSaveMaterial = async (e) => {
     e.preventDefault();
     if (!matTitle.trim() || !matContent.trim()) {
@@ -483,7 +485,7 @@ export default function DianMathLabApp() {
     }
     const { error } = await supabase.from('utbk_materials').insert([{
       title: matTitle,
-      category: matCategory,
+      category: matCategory.trim(),
       content: matContent,
       resource_link: matLink || null
     }]);
@@ -491,7 +493,7 @@ export default function DianMathLabApp() {
     if (!error) {
       setMatTitle(''); setMatContent(''); setMatLink('');
       fetchAppData(session);
-      showAlert('Berhasil', 'Materi pembelajaran baru berhasil diunggah.', 'success');
+      showAlert('Berhasil', 'Materi berhasil diunggah.', 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
@@ -506,7 +508,7 @@ export default function DianMathLabApp() {
     });
   };
 
-  // --- MANAJEMEN INFORMASI (ADMIN/TUTOR) ---
+  // --- KELOLA INFORMASI ---
   const handleSaveInfo = async (e) => {
     e.preventDefault();
     if (!infoTitle.trim() || !infoDesc.trim()) {
@@ -523,7 +525,7 @@ export default function DianMathLabApp() {
     if (!error) {
       setInfoTitle(''); setInfoDesc(''); setInfoUrl('');
       fetchAppData(session);
-      showAlert('Berhasil', 'Informasi try out / jalur mandiri berhasil dipublikasikan.', 'success');
+      showAlert('Berhasil', 'Informasi berhasil dipublikasikan.', 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
@@ -538,11 +540,14 @@ export default function DianMathLabApp() {
     });
   };
 
-  // --- MULAI UJIAN KUIS SISWA ---
+  // --- MULAI UJIAN KUIS SISWA (BERDASARKAN KETIKAN BEBAS) ---
   const startExam = () => {
-    const filtered = utbkQuestions.filter(q => q.package_name === selectedPackage && q.subtest === selectedSubtest);
+    const filtered = utbkQuestions.filter(q => 
+      q.package_name?.toLowerCase() === filterPackageInput.trim().toLowerCase() && 
+      q.subtest?.toLowerCase() === filterSubtestInput.trim().toLowerCase()
+    );
     if (filtered.length === 0) {
-      showAlert('Perhatian', `Belum ada soal untuk ${selectedPackage} - ${selectedSubtest}. Silakan hubungi tentor.`, 'warning');
+      showAlert('Perhatian', `Belum ada soal untuk Paket "${filterPackageInput}" dan Subtes "${filterSubtestInput}".`, 'warning');
       return;
     }
     const duration = filtered[0]?.duration_minutes || 45;
@@ -562,13 +567,13 @@ export default function DianMathLabApp() {
       }
     });
     const total = currentExamQuestions.length;
-    const score = total > 0 ? Math.round((correctCount / total) * 1000) : 0; // Skor UTBK 0 - 1000
+    const score = total > 0 ? Math.round((correctCount / total) * 1000) : 0;
 
     const resultData = {
       user_id: session.user.id,
       user_email: session.user.email,
-      package_name: selectedPackage,
-      subtest: selectedSubtest,
+      package_name: filterPackageInput,
+      subtest: filterSubtestInput,
       total_questions: total,
       correct_answers: correctCount,
       score: score,
@@ -580,7 +585,7 @@ export default function DianMathLabApp() {
 
     await supabase.from('utbk_history').insert([resultData]);
     fetchAppData(session);
-    showAlert('Ujian Selesai', `Hasil ujian Anda telah disimpan. Skor UTBK Anda: ${score}`, 'success');
+    showAlert('Ujian Selesai', `Skor UTBK Anda: ${score}`, 'success');
   };
 
   // --- MANAJEMEN SISWA, JADWAL, PRESENSI ---
@@ -599,7 +604,7 @@ export default function DianMathLabApp() {
     } else {
       setInputName(''); setInputEmail(''); setInputSubject(''); setInputGrade('Kelas 10 SMA'); setIsAddingStudent(false);
       fetchAppData(session);
-      showAlert('Berhasil', 'Data siswa berhasil ditambahkan.', 'success');
+      showAlert('Berhasil', 'Siswa berhasil ditambahkan.', 'success');
     }
   };
 
@@ -607,19 +612,19 @@ export default function DianMathLabApp() {
     const { error } = await supabase.from('students').update({ tutor_id: newTutorId }).eq('id', studentId);
     if (!error) {
       fetchAppData(session);
-      showAlert('Berhasil', 'Siswa berhasil dipindahkan ke tutor baru.', 'success');
+      showAlert('Berhasil', 'Siswa dipindahkan ke tutor baru.', 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
   };
 
   const handleDeleteStudent = (id) => {
-    showAlert('Konfirmasi Hapus', 'Hapus siswa ini dari database?', 'warning', async () => {
+    showAlert('Konfirmasi Hapus', 'Hapus siswa ini?', 'warning', async () => {
       const { error } = await supabase.from('students').delete().eq('id', id);
       closeModal();
       if (!error) {
         fetchAppData(session);
-        showAlert('Terhapus', 'Data siswa berhasil dihapus.', 'success');
+        showAlert('Terhapus', 'Siswa dihapus.', 'success');
       } else {
         showAlert('Gagal', error.message, 'warning');
       }
@@ -629,7 +634,7 @@ export default function DianMathLabApp() {
   const handleAddSchedule = async (e) => {
     e.preventDefault();
     if (!schedStudentId) {
-      showAlert('Perhatian', 'Silakan pilih siswa terlebih dahulu!', 'warning');
+      showAlert('Perhatian', 'Pilih siswa terlebih dahulu!', 'warning');
       return;
     }
     const { error } = await supabase.from('schedules').insert([{
@@ -644,7 +649,7 @@ export default function DianMathLabApp() {
     } else {
       setIsAddingSchedule(false);
       fetchAppData(session);
-      showAlert('Berhasil', 'Jadwal les baru berhasil ditambahkan.', 'success');
+      showAlert('Berhasil', 'Jadwal ditambahkan.', 'success');
     }
   };
 
@@ -654,7 +659,7 @@ export default function DianMathLabApp() {
       closeModal();
       if (!error) {
         fetchAppData(session);
-        showAlert('Terhapus', 'Jadwal berhasil dihapus.', 'success');
+        showAlert('Terhapus', 'Jadwal dihapus.', 'success');
       } else {
         showAlert('Gagal', error.message, 'warning');
       }
@@ -664,7 +669,7 @@ export default function DianMathLabApp() {
   const handleCreatePresence = async (e) => {
     e.preventDefault();
     if (!selectedStudent || !presDate || !presObjective || !presMaterial) {
-      showAlert('Perhatian', 'Mohon lengkapi semua kolom form presensi!', 'warning');
+      showAlert('Perhatian', 'Lengkapi semua kolom presensi!', 'warning');
       return;
     }
     const foundStudent = students.find(s => (s.full_name || s.name) === selectedStudent);
@@ -683,7 +688,7 @@ export default function DianMathLabApp() {
         setEditingPresenceId(null);
         setSelectedStudent(''); setPresDate(''); setPresObjective(''); setPresMaterial('');
         fetchAppData(session);
-        showAlert('Berhasil', 'Data presensi berhasil diperbarui!', 'success');
+        showAlert('Berhasil', 'Presensi diperbarui!', 'success');
       }
     } else {
       const { error: err1 } = await supabase.from('presence_records').insert([{
@@ -712,7 +717,7 @@ export default function DianMathLabApp() {
       } else {
         setSelectedStudent(''); setPresDate(''); setPresObjective(''); setPresMaterial('');
         fetchAppData(session);
-        showAlert('Berhasil', 'Data presensi berhasil direkam!', 'success');
+        showAlert('Berhasil', 'Presensi direkam!', 'success');
       }
     }
   };
@@ -727,12 +732,12 @@ export default function DianMathLabApp() {
   };
 
   const handleDeletePresence = (id) => {
-    showAlert('Konfirmasi Hapus', 'Hapus data presensi ini?', 'warning', async () => {
+    showAlert('Konfirmasi Hapus', 'Hapus presensi ini?', 'warning', async () => {
       const { error } = await supabase.from('presence_records').delete().eq('id', id);
       closeModal();
       if (!error) {
         fetchAppData(session);
-        showAlert('Terhapus', 'Data presensi berhasil dihapus.', 'success');
+        showAlert('Terhapus', 'Presensi dihapus.', 'success');
       } else {
         showAlert('Gagal', error.message, 'warning');
       }
@@ -743,7 +748,7 @@ export default function DianMathLabApp() {
     const { error } = await supabase.from('presence_records').update({ status: 'Terkonfirmasi' }).eq('id', id);
     if (!error) {
       fetchAppData(session);
-      showAlert('Dikonfirmasi', 'Kehadiran sesi les berhasil dikonfirmasi.', 'success');
+      showAlert('Dikonfirmasi', 'Kehadiran dikonfirmasi.', 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
@@ -753,19 +758,19 @@ export default function DianMathLabApp() {
     const { error } = await supabase.from('profiles').update({ role: newRoleVal }).eq('id', targetUserId);
     if (!error) {
       fetchAppData(session);
-      showAlert('Berhasil', 'Role pengguna berhasil diperbarui.', 'success');
+      showAlert('Berhasil', 'Role diperbarui.', 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
   };
 
   const handleDeleteUserAccount = (targetUserId, userEmailTarget) => {
-    showAlert('Konfirmasi Hapus Akun', `Hapus akun ${userEmailTarget} dari sistem?`, 'warning', async () => {
+    showAlert('Konfirmasi Hapus', `Hapus akun ${userEmailTarget}?`, 'warning', async () => {
       closeModal();
       await supabase.from('profiles').delete().eq('id', targetUserId);
       await supabase.from('students').delete().ilike('email', userEmailTarget);
       fetchAppData(session);
-      showAlert('Berhasil', 'Akun berhasil dihapus.', 'success');
+      showAlert('Berhasil', 'Akun dihapus.', 'success');
     });
   };
 
@@ -779,7 +784,7 @@ export default function DianMathLabApp() {
     }).eq('id', session.user.id);
 
     if (!error) {
-      showAlert('Profil Diperbarui', 'Data diri dan informasi akun berhasil disimpan.', 'success');
+      showAlert('Berhasil', 'Profil disimpan.', 'success');
     } else {
       showAlert('Gagal', error.message, 'warning');
     }
@@ -804,7 +809,7 @@ export default function DianMathLabApp() {
 
         <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-xl border border-sky-100 rounded-3xl p-8 shadow-2xl space-y-6">
           <div className="text-center space-y-2">
-            <div className="inline-flex p-3 bg-sky-500/10 border border-sky-200 rounded-2xl text-sky-600 mb-1 animate-pulse">
+            <div className="inline-flex p-3 bg-sky-500/10 border border-sky-200 rounded-2xl text-sky-600 mb-1">
               <Sparkles size={24} />
             </div>
             <h1 className="text-2xl font-black tracking-wider text-sky-900">Dian Math Lab</h1>
@@ -850,10 +855,6 @@ export default function DianMathLabApp() {
 
           {authMode === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
-              <div className="bg-sky-50 p-3 rounded-2xl border border-sky-200 text-xs text-sky-900 space-y-1">
-                <p className="font-bold flex items-center gap-1"><Sparkles className="text-sky-600" size={14} /> Informasi Aktivasi Email:</p>
-                <p className="text-[11px] text-slate-600">Pastikan email yang didaftarkan sudah dimasukkan oleh tentor ke menu Data Siswa.</p>
-              </div>
               <div>
                 <label className="block text-xs font-bold text-sky-900 mb-1.5">Pilih Peran (Role)</label>
                 <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800">
@@ -887,37 +888,6 @@ export default function DianMathLabApp() {
             </form>
           )}
         </div>
-
-        {/* FLOATING WHATSAPP LOGIN */}
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-          {showWaMenu && (
-            <div className="mb-3 w-64 bg-white/95 backdrop-blur-md border border-sky-100 rounded-3xl shadow-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between border-b border-sky-100 pb-2">
-                  <span className="text-xs font-black text-sky-900">💬 Hubungi Dian Math Lab</span>
-                  <button onClick={() => setShowWaMenu(false)} className="text-slate-400 hover:text-slate-700 text-xs font-bold">✕</button>
-              </div>
-              <div className="space-y-2">
-                  <a href="https://wa.me/6287730655553?text=Halo%20Founder%20Cantik%20Dian%20Math%20Lab" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl">
-                    <div>
-                      <p className="text-xs font-bold text-emerald-950">👩‍💼 Founder Cantik</p>
-                      <p className="text-[10px] text-emerald-600">0877-3065-5553</p>
-                    </div>
-                    <span className="text-xs bg-emerald-500 text-white px-2.5 py-1 rounded-xl">Chat</span>
-                  </a>
-                  <a href="https://wa.me/62882005679302?text=Halo%20Admin%20Ganteng%20Dian%20Math%20Lab" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2.5 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-2xl">
-                    <div>
-                      <p className="text-xs font-bold text-sky-950">👨‍💻 Admin Ganteng</p>
-                      <p className="text-[10px] text-sky-600">0882-0056-79302</p>
-                    </div>
-                    <span className="text-xs bg-sky-500 text-white px-2.5 py-1 rounded-xl">Chat</span>
-                  </a>
-              </div>
-            </div>
-          )}
-          <button onClick={() => setShowWaMenu(!showWaMenu)} className="relative group flex items-center justify-center w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-400 text-white rounded-full shadow-2xl hover:scale-110 transition-all">
-            <svg className="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.124-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-          </button>
-        </div>
       </div>
     );
   }
@@ -940,8 +910,8 @@ export default function DianMathLabApp() {
   return (
     <div className="flex h-screen bg-sky-50/50 text-slate-800 font-sans antialiased overflow-hidden relative">
       
-      {/* SIDEBAR */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white text-slate-700 transform transition-all duration-500 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col justify-between border-r border-sky-100 shadow-xl`}>
+      {/* SIDEBAR - NUANSA BIRU PROFESIONAL */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white text-slate-700 transform transition-all duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col justify-between border-r border-sky-100 shadow-xl`}>
         <div>
           <div className="px-6 py-6 border-b border-sky-100 flex items-center justify-between bg-sky-50/50">
             <div>
@@ -956,9 +926,9 @@ export default function DianMathLabApp() {
               <div className="flex items-center gap-3"><Home size={18} /> Dashboard Utama</div>
             </button>
             
-            {/* MENU UTBK PK PM (Hanya muncul untuk Admin, Tutor, atau Siswa yang diizinkan) */}
+            {/* PORTAL UTBK PK PM (WARNA BIRU PROFESIONAL) */}
             {(userRole === 'admin' || userRole === 'tutor' || userProfile.utbk_access) && (
-              <button onClick={() => setActiveMenu('utbk-portal')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${activeMenu === 'utbk-portal' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' : 'hover:bg-purple-50 text-purple-700 bg-purple-50/50'}`}>
+              <button onClick={() => setActiveMenu('utbk-portal')} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${activeMenu === 'utbk-portal' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-sky-50 text-blue-700 bg-sky-50/60'}`}>
                 <div className="flex items-center gap-3"><Award size={18} /> Portal UTBK PK PM ⭐</div>
               </button>
             )}
@@ -985,7 +955,7 @@ export default function DianMathLabApp() {
                 <CheckSquare size={18} /> {(userRole === 'tutor' || userRole === 'admin') ? 'Input Presensi' : 'Konfirmasi Kehadiran'}
               </div>
               {userRole === 'client' && pendingCount > 0 && (
-                <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full animate-bounce">{pendingCount}</span>
+                <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full">{pendingCount}</span>
               )}
             </button>
 
@@ -1039,112 +1009,104 @@ export default function DianMathLabApp() {
                 <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Siswa Terdaftar</span><div className="mt-2 text-3xl font-black">{students.length}</div></div>
                 <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Jadwal Aktif</span><div className="mt-2 text-3xl font-black text-blue-600">{clientSchedules.length}</div></div>
                 <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Presensi Pending</span><div className="mt-2 text-3xl font-black text-amber-500">{pendingCount}</div></div>
-                <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Status Akses UTBK</span><div className="mt-2 text-base font-bold text-purple-600 flex items-center gap-1.5">{(userRole !== 'client' || userProfile.utbk_access) ? '✅ Aktif' : '🔒 Belum Diizinkan'}</div></div>
+                <div className="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm"><span className="text-xs font-bold text-sky-600 uppercase">Status Akses UTBK</span><div className="mt-2 text-base font-bold text-blue-600 flex items-center gap-1.5">{(userRole !== 'client' || userProfile.utbk_access) ? '✅ Aktif' : '🔒 Belum Diizinkan'}</div></div>
               </div>
             </div>
           )}
 
-          {/* --- PORTAL UTBK PK PM (3 SUB MENU: LATIHAN, MATERI, INFORMASI) --- */}
+          {/* --- PORTAL UTBK PK PM (TANPA BATAS & NUANSA BIRU PROFESIONAL) --- */}
           {activeMenu === 'utbk-portal' && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-3xl p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="bg-gradient-to-r from-sky-600 to-blue-700 text-white rounded-3xl p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                   <h2 className="text-2xl font-black flex items-center gap-2"><Award size={28} /> Portal Eksklusif UTBK PK PM</h2>
-                  <p className="text-purple-100 text-xs mt-1">Latihan soal kuis berstandar UTBK, kumpulan materi lengkap, dan info try out terbaru.</p>
+                  <p className="text-sky-100 text-xs mt-1">Latihan soal kuis fleksibel, materi lengkap, dan informasi try out/jalur mandiri.</p>
                 </div>
                 <div className="flex gap-2 bg-white/10 p-1.5 rounded-2xl backdrop-blur-md">
-                  <button onClick={() => setActiveUtbkSubMenu('latihan')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeUtbkSubMenu === 'latihan' ? 'bg-white text-purple-900 shadow-md' : 'text-white hover:bg-white/20'}`}>✍️ Latihan Soal</button>
-                  <button onClick={() => setActiveUtbkSubMenu('materi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeUtbkSubMenu === 'materi' ? 'bg-white text-purple-900 shadow-md' : 'text-white hover:bg-white/20'}`}>📚 Kumpulan Materi</button>
-                  <button onClick={() => setActiveUtbkSubMenu('informasi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeUtbkSubMenu === 'informasi' ? 'bg-white text-purple-900 shadow-md' : 'text-white hover:bg-white/20'}`}>📢 Informasi & TO IG</button>
+                  <button onClick={() => setActiveUtbkSubMenu('latihan')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeUtbkSubMenu === 'latihan' ? 'bg-white text-blue-900 shadow-md' : 'text-white hover:bg-white/20'}`}>✍️ Latihan Soal</button>
+                  <button onClick={() => setActiveUtbkSubMenu('materi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeUtbkSubMenu === 'materi' ? 'bg-white text-blue-900 shadow-md' : 'text-white hover:bg-white/20'}`}>📚 Kumpulan Materi</button>
+                  <button onClick={() => setActiveUtbkSubMenu('informasi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeUtbkSubMenu === 'informasi' ? 'bg-white text-blue-900 shadow-md' : 'text-white hover:bg-white/20'}`}>📢 Informasi & TO IG</button>
                 </div>
               </div>
 
-              {/* 1. SUB-MENU: LATIHAN SOAL (SISWA MENGERJAKAN, ADMIN/TENTOR PREVIEW & KELOLA SOAL) */}
+              {/* 1. SUB-MENU: LATIHAN SOAL (TANPA BATAS PAKET/SUBTES - KETIK BEBAS) */}
               {activeUtbkSubMenu === 'latihan' && (
                 <div className="space-y-6">
-                  {/* PANEL KELOLA SOAL HANYA UNTUK ADMIN/TUTOR */}
+                  {/* PANEL KELOLA SOAL (ADMIN/TUTOR) */}
                   {(userRole === 'admin' || userRole === 'tutor') && (
-                    <div className="bg-white rounded-3xl border border-purple-200 p-8 space-y-6 shadow-sm">
-                      <div className="flex justify-between items-center border-b border-purple-100 pb-4">
+                    <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                      <div className="flex justify-between items-center border-b border-sky-100 pb-4">
                         <div>
-                          <h3 className="text-lg font-black text-purple-900 flex items-center gap-2">
-                            <FileSpreadsheet className="text-purple-600" size={20} /> Panel Kelola Soal & Preview Ujian (Tentor/Admin)
+                          <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
+                            <FileSpreadsheet className="text-sky-600" size={20} /> Panel Kelola Soal & Preview Ujian (Tentor/Admin)
                           </h3>
-                          <p className="text-xs text-slate-500">Tambah, Edit, Hapus, dan unggah gambar soal (JPG/PNG/JPEG atau link tautan).</p>
+                          <p className="text-xs text-slate-500">Ketik nama paket & subtes secara bebas tanpa batasan, unggah gambar lokal/URL.</p>
                         </div>
                       </div>
 
-                      {/* FORM TAMBAH / EDIT SOAL */}
-                      <form onSubmit={handleSaveQuestion} className="bg-purple-50/50 p-6 rounded-2xl border border-purple-100 space-y-4">
-                        <h4 className="font-bold text-xs text-purple-950">{editingQuestionId ? '✏️ Edit Soal UTBK' : '➕ Tambah Soal Baru'}</h4>
+                      {/* FORM TAMBAH / EDIT SOAL (INPUT KETIK BEBAS) */}
+                      <form onSubmit={handleSaveQuestion} className="bg-sky-50/50 p-6 rounded-2xl border border-sky-200 space-y-4">
+                        <h4 className="font-bold text-xs text-sky-950">{editingQuestionId ? '✏️ Edit Soal UTBK' : '➕ Tambah Soal Baru'}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Pilih Paket</label>
-                            <select value={qPackage} onChange={(e) => setQPackage(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white font-bold">
-                              <option value="Paket 1">Paket 1</option>
-                              <option value="Paket 2">Paket 2</option>
-                              <option value="Paket 3">Paket 3</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Nama Paket (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Paket 1 / Try Out 1 / UTBK Akbar" value={qPackage} onChange={(e) => setQPackage(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Subtes</label>
-                            <select value={qSubtest} onChange={(e) => setQSubtest(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white font-bold">
-                              <option value="Penalaran Umum">Penalaran Umum</option>
-                              <option value="Pengetahuan Kuantitatif">Pengetahuan Kuantitatif</option>
-                              <option value="PBM & PPU">PBM & PPU</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Nama Subtes (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Penalaran Umum / Mat Dasar / Lainnya" value={qSubtest} onChange={(e) => setQSubtest(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Durasi Ujian (Menit)</label>
-                            <input type="number" value={examDurationMinutes} onChange={(e) => setExamDurationMinutes(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required />
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Durasi Ujian (Menit)</label>
+                            <input type="number" value={examDurationMinutes} onChange={(e) => setExamDurationMinutes(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-purple-900 mb-1">Teks Pertanyaan Soal</label>
-                          <textarea rows="3" placeholder="Ketik pertanyaan di sini..." value={qText} onChange={(e) => setQText(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required></textarea>
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Teks Pertanyaan Soal</label>
+                          <textarea rows="3" placeholder="Ketik pertanyaan di sini..." value={qText} onChange={(e) => setQText(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required></textarea>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Upload Gambar (JPG, PNG, JPEG)</label>
-                            <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleImageUploadInput} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200" />
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Upload Gambar (JPG, PNG, JPEG)</label>
+                            <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleImageUploadInput} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-100 file:text-sky-700 hover:file:bg-sky-200" />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Atau Masukkan Link Tautan Gambar</label>
-                            <input type="text" placeholder="https://example.com/gambar.png" value={qImage} onChange={(e) => setQImage(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" />
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Atau Masukkan Link Tautan Gambar</label>
+                            <input type="text" placeholder="https://example.com/gambar.png" value={qImage} onChange={(e) => setQImage(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" />
                           </div>
                         </div>
 
                         {qImage && (
-                          <div className="p-3 bg-white border border-purple-200 rounded-xl flex items-center gap-4">
+                          <div className="p-3 bg-white border border-sky-200 rounded-xl flex items-center gap-4">
                             <img src={qImage} alt="Preview" className="h-16 rounded-lg object-contain" />
                             <span className="text-[11px] text-slate-500">Preview Gambar Soal Aktif</span>
                           </div>
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <input type="text" placeholder="Pilihan A" value={optA} onChange={(e) => setOptA(e.target.value)} className="px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required />
-                          <input type="text" placeholder="Pilihan B" value={optB} onChange={(e) => setOptB(e.target.value)} className="px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required />
-                          <input type="text" placeholder="Pilihan C" value={optC} onChange={(e) => setOptC(e.target.value)} className="px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required />
-                          <input type="text" placeholder="Pilihan D" value={optD} onChange={(e) => setOptD(e.target.value)} className="px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required />
-                          <input type="text" placeholder="Pilihan E" value={optE} onChange={(e) => setOptE(e.target.value)} className="px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" required />
+                          <input type="text" placeholder="Pilihan A" value={optA} onChange={(e) => setOptA(e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
+                          <input type="text" placeholder="Pilihan B" value={optB} onChange={(e) => setOptB(e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
+                          <input type="text" placeholder="Pilihan C" value={optC} onChange={(e) => setOptC(e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
+                          <input type="text" placeholder="Pilihan D" value={optD} onChange={(e) => setOptD(e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
+                          <input type="text" placeholder="Pilihan E" value={optE} onChange={(e) => setOptE(e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Kunci Jawaban Benar</label>
-                            <select value={qAns} onChange={(e) => setQAns(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white font-bold text-emerald-700">
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Kunci Jawaban Benar</label>
+                            <select value={qAns} onChange={(e) => setQAns(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-emerald-700">
                               <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
                             </select>
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-purple-900 mb-1">Pembahasan Soal</label>
-                          <input type="text" placeholder="Penjelasan pembahasan..." value={qExp} onChange={(e) => setQExp(e.target.value)} className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl bg-white" />
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Pembahasan Soal</label>
+                          <input type="text" placeholder="Penjelasan pembahasan..." value={qExp} onChange={(e) => setQExp(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" />
                         </div>
 
                         <div className="flex justify-end gap-2 pt-2">
                           {editingQuestionId && <button type="button" onClick={resetQuestionForm} className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>}
-                          <button type="submit" className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-md">
+                          <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md">
                             {editingQuestionId ? 'Simpan Perubahan Soal' : 'Tambah Soal ke Database'}
                           </button>
                         </div>
@@ -1152,14 +1114,14 @@ export default function DianMathLabApp() {
 
                       {/* PREVIEW DAFTAR SOAL OLEH TENTOR/ADMIN */}
                       <div className="space-y-3 pt-2">
-                        <h4 className="font-bold text-xs text-purple-950 flex items-center gap-1.5"><Eye size={16} /> Preview Soal di Database ({utbkQuestions.length})</h4>
+                        <h4 className="font-bold text-xs text-sky-950 flex items-center gap-1.5"><Eye size={16} /> Preview Soal di Database ({utbkQuestions.length})</h4>
                         <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
                           {utbkQuestions.map((q) => (
-                            <div key={q.id} className="p-4 bg-purple-50/40 border border-purple-200 rounded-2xl flex justify-between items-start text-xs shadow-xs">
+                            <div key={q.id} className="p-4 bg-sky-50/40 border border-sky-200 rounded-2xl flex justify-between items-start text-xs shadow-xs">
                               <div className="space-y-1">
-                                <span className="font-bold text-purple-900 bg-purple-100 px-2.5 py-0.5 rounded-md">[{q.package_name} • {q.subtest}]</span>
+                                <span className="font-bold text-blue-900 bg-sky-100 px-2.5 py-0.5 rounded-md">Paket: {q.package_name} | Subtes: {q.subtest}</span>
                                 <p className="font-medium text-slate-800 mt-1">{q.question_text}</p>
-                                {q.image_url && <img src={q.image_url} alt="Soal" className="h-16 mt-2 rounded-lg border border-purple-200" />}
+                                {q.image_url && <img src={q.image_url} alt="Soal" className="h-16 mt-2 rounded-lg border border-sky-200" />}
                                 <p className="text-[11px] text-emerald-700 font-bold mt-1">Kunci: {q.correct_answer}</p>
                               </div>
                               <div className="flex gap-2">
@@ -1173,36 +1135,28 @@ export default function DianMathLabApp() {
                     </div>
                   )}
 
-                  {/* INTERFACE UJIAN KUIS KHUSUS SISWA (CLIENT) */}
+                  {/* INTERFACE UJIAN KUIS KHUSUS SISWA (CLIENT) - KETIK BEBAS */}
                   {userRole === 'client' && !isExamActive && !examResult && (
-                    <div className="bg-white rounded-3xl border border-purple-100 p-8 space-y-6 shadow-sm text-center">
+                    <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm text-center">
                       <div className="max-w-md mx-auto space-y-4">
-                        <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-3xl mx-auto flex items-center justify-center">
+                        <div className="w-16 h-16 bg-sky-100 text-blue-600 rounded-3xl mx-auto flex items-center justify-center">
                           <Award size={32} />
                         </div>
                         <h3 className="text-xl font-black text-slate-900">Mulai Try Out & Latihan UTBK PK PM</h3>
-                        <p className="text-xs text-slate-500">Pilih paket soal dan subtes yang ingin dikerjakan. Sistem penilaian menggunakan bobot ala UTBK asli (skor maksimal 1000).</p>
+                        <p className="text-xs text-slate-500">Ketik nama paket dan subtes latihan yang ingin Anda kerjakan secara bebas.</p>
                         
-                        <div className="grid grid-cols-2 gap-3 text-left">
+                        <div className="grid grid-cols-1 gap-3 text-left">
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Pilih Paket</label>
-                            <select value={selectedPackage} onChange={(e) => setSelectedPackage(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-purple-200 rounded-xl bg-purple-50/50 font-bold">
-                              <option value="Paket 1">Paket 1</option>
-                              <option value="Paket 2">Paket 2</option>
-                              <option value="Paket 3">Paket 3</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Nama Paket Ujian (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Paket 1" value={filterPackageInput} onChange={(e) => setFilterPackageInput(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-sky-200 rounded-xl bg-sky-50/50 font-bold" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Subtes</label>
-                            <select value={selectedSubtest} onChange={(e) => setSelectedSubtest(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-purple-200 rounded-xl bg-purple-50/50 font-bold">
-                              <option value="Penalaran Umum">Penalaran Umum</option>
-                              <option value="Pengetahuan Kuantitatif">Pengetahuan Kuantitatif</option>
-                              <option value="PBM & PPU">PBM & PPU</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Subtes (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Penalaran Umum" value={filterSubtestInput} onChange={(e) => setFilterSubtestInput(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-sky-200 rounded-xl bg-sky-50/50 font-bold" required />
                           </div>
                         </div>
 
-                        <button onClick={startExam} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-purple-500/30 transition-all">
+                        <button onClick={startExam} className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-sky-500/35 transition-all">
                           Mulai Mengerjakan Ujian 🚀
                         </button>
                       </div>
@@ -1211,10 +1165,10 @@ export default function DianMathLabApp() {
 
                   {/* KETIKA UJIAN AKTIF DI SISWA */}
                   {isExamActive && currentExamQuestions.length > 0 && (
-                    <div className="bg-white rounded-3xl border border-purple-200 p-8 space-y-6 shadow-xl">
-                      <div className="flex justify-between items-center border-b border-purple-100 pb-4">
+                    <div className="bg-white rounded-3xl border border-sky-200 p-8 space-y-6 shadow-xl">
+                      <div className="flex justify-between items-center border-b border-sky-100 pb-4">
                         <div>
-                          <h3 className="text-sm font-black text-purple-900">{selectedPackage} • {selectedSubtest}</h3>
+                          <h3 className="text-sm font-black text-sky-900">Paket: {filterPackageInput} • Subtes: {filterSubtestInput}</h3>
                           <p className="text-xs text-slate-500">Soal {currentExamIndex + 1} dari {currentExamQuestions.length}</p>
                         </div>
                         <div className="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl text-xs font-black flex items-center gap-1.5 animate-pulse">
@@ -1228,7 +1182,7 @@ export default function DianMathLabApp() {
                         </p>
                         {currentExamQuestions[currentExamIndex].image_url && (
                           <div className="my-3">
-                            <img src={currentExamQuestions[currentExamIndex].image_url} alt="Gambar Soal" className="max-h-60 rounded-2xl border border-purple-100 shadow-xs" />
+                            <img src={currentExamQuestions[currentExamIndex].image_url} alt="Gambar Soal" className="max-h-60 rounded-2xl border border-sky-100 shadow-xs" />
                           </div>
                         )}
 
@@ -1238,8 +1192,8 @@ export default function DianMathLabApp() {
                             if (!optText) return null;
                             const isSelected = studentAnswers[currentExamIndex] === opt;
                             return (
-                              <button key={opt} onClick={() => setStudentAnswers({...studentAnswers, [currentExamIndex]: opt})} className={`w-full text-left p-3.5 rounded-2xl border text-xs font-medium transition-all flex items-center gap-3 ${isSelected ? 'bg-purple-600 text-white border-purple-600 shadow-md' : 'bg-purple-50/40 hover:bg-purple-100/50 border-purple-100 text-slate-800'}`}>
-                                <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${isSelected ? 'bg-white text-purple-700' : 'bg-purple-200 text-purple-900'}`}>{opt}</span>
+                              <button key={opt} onClick={() => setStudentAnswers({...studentAnswers, [currentExamIndex]: opt})} className={`w-full text-left p-3.5 rounded-2xl border text-xs font-medium transition-all flex items-center gap-3 ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-sky-50/40 hover:bg-sky-100/50 border-sky-100 text-slate-800'}`}>
+                                <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${isSelected ? 'bg-white text-blue-700' : 'bg-sky-200 text-sky-900'}`}>{opt}</span>
                                 {optText}
                               </button>
                             );
@@ -1247,11 +1201,11 @@ export default function DianMathLabApp() {
                         </div>
                       </div>
 
-                      <div className="flex justify-between items-center pt-4 border-t border-purple-100">
+                      <div className="flex justify-between items-center pt-4 border-t border-sky-100">
                         <button disabled={currentExamIndex === 0} onClick={() => setCurrentExamIndex(currentExamIndex - 1)} className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold disabled:opacity-50">Sebelumnya</button>
                         
                         {currentExamIndex < currentExamQuestions.length - 1 ? (
-                          <button onClick={() => setCurrentExamIndex(currentExamIndex + 1)} className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold shadow-md">Selanjutnya</button>
+                          <button onClick={() => setCurrentExamIndex(currentExamIndex + 1)} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md">Selanjutnya</button>
                         ) : (
                           <button onClick={finishExamAutomatically} className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-lg">Selesai & Kumpulkan Ujian</button>
                         )}
@@ -1261,24 +1215,24 @@ export default function DianMathLabApp() {
 
                   {/* HASIL UJIAN SISWA */}
                   {examResult && (
-                    <div className="bg-white rounded-3xl border border-purple-200 p-8 space-y-6 shadow-xl text-center max-w-lg mx-auto">
+                    <div className="bg-white rounded-3xl border border-sky-200 p-8 space-y-6 shadow-xl text-center max-w-lg mx-auto">
                       <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl mx-auto flex items-center justify-center">
                         <CheckCircle2 size={36} />
                       </div>
                       <h3 className="text-xl font-black text-slate-900">Ujian Berhasil Diselesaikan!</h3>
-                      <div className="p-6 bg-purple-50/60 rounded-3xl border border-purple-100 space-y-2">
-                        <p className="text-xs text-slate-500">{examResult.package_name} • {examResult.subtest}</p>
-                        <div className="text-4xl font-black text-purple-700">{examResult.score} <span className="text-xs text-slate-400 font-normal">/ 1000 Skor UTBK</span></div>
+                      <div className="p-6 bg-sky-50/60 rounded-3xl border border-sky-100 space-y-2">
+                        <p className="text-xs text-slate-500">Paket: {examResult.package_name} | Subtes: {examResult.subtest}</p>
+                        <div className="text-4xl font-black text-blue-700">{examResult.score} <span className="text-xs text-slate-400 font-normal">/ 1000 Skor UTBK</span></div>
                         <p className="text-xs font-bold text-slate-700">Benar: {examResult.correct_answers} dari {examResult.total_questions} soal</p>
                       </div>
-                      <button onClick={() => { setExamResult(null); setIsExamActive(false); }} className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-bold">Kembali ke Menu Latihan</button>
+                      <button onClick={() => { setExamResult(null); setIsExamActive(false); }} className="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-bold">Kembali ke Menu Latihan</button>
                     </div>
                   )}
 
                   {/* DASHBOARD PROGRES & RIWAYAT LATIHAN SISWA DENGAN TANGGAL */}
-                  <div className="bg-white rounded-3xl border border-purple-100 p-8 space-y-4 shadow-sm">
-                    <h3 className="text-lg font-black text-purple-900 flex items-center gap-2">
-                      <TrendingUp className="text-purple-600" size={20} /> Dashboard Progres & Riwayat Latihan Anda
+                  <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-4 shadow-sm">
+                    <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
+                      <TrendingUp className="text-blue-600" size={20} /> Dashboard Progres & Riwayat Latihan Anda
                     </h3>
                     <p className="text-xs text-slate-500">Catatan perkembangan skor try out dari waktu ke waktu beserta tanggal pengerjaan.</p>
                     
@@ -1287,13 +1241,13 @@ export default function DianMathLabApp() {
                         <p className="text-xs text-slate-400 italic py-6 text-center">Belum ada riwayat pengerjaan try out.</p>
                       ) : (
                         utbkHistory.map((h, i) => (
-                          <div key={i} className="p-4 rounded-2xl border border-purple-100 bg-purple-50/30 flex justify-between items-center text-xs">
+                          <div key={i} className="p-4 rounded-2xl border border-sky-100 bg-sky-50/30 flex justify-between items-center text-xs">
                             <div>
-                              <p className="font-bold text-purple-950">{h.package_name} • {h.subtest}</p>
+                              <p className="font-bold text-sky-950">Paket: {h.package_name} | Subtes: {h.subtest}</p>
                               <p className="text-[10px] text-slate-500 mt-0.5">📅 Tanggal: {new Date(h.date_taken).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                             </div>
                             <div className="text-right">
-                              <span className="text-base font-black text-purple-700">{h.score} Poin</span>
+                              <span className="text-base font-black text-blue-700">{h.score} Poin</span>
                               <p className="text-[10px] text-slate-500">Benar {h.correct_answers}/{h.total_questions}</p>
                             </div>
                           </div>
@@ -1304,49 +1258,43 @@ export default function DianMathLabApp() {
                 </div>
               )}
 
-              {/* 2. SUB-MENU: KUMPULAN MATERI (DENGAN FORM UPLOAD ADMIN/TENTOR & PREVIEW SISWA) */}
+              {/* 2. SUB-MENU: KUMPULAN MATERI */}
               {activeUtbkSubMenu === 'materi' && (
                 <div className="space-y-6">
-                  {/* FORM UPLOAD MATERI OLEH ADMIN/TENTOR */}
                   {(userRole === 'admin' || userRole === 'tutor') && (
-                    <div className="bg-white rounded-3xl border border-purple-200 p-8 space-y-6 shadow-sm">
-                      <h3 className="text-lg font-black text-purple-900 flex items-center gap-2">
-                        <BookOpen className="text-purple-600" size={20} /> Upload Materi Pembelajaran UTBK
+                    <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                      <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
+                        <BookOpen className="text-blue-600" size={20} /> Upload Materi Pembelajaran UTBK
                       </h3>
                       <form onSubmit={handleSaveMaterial} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Judul Materi</label>
-                            <input type="text" placeholder="Contoh: Modul Rahasia Aljabar UTBK" value={matTitle} onChange={(e) => setMatTitle(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white" required />
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Judul Materi</label>
+                            <input type="text" placeholder="Contoh: Modul Rahasia Aljabar UTBK" value={matTitle} onChange={(e) => setMatTitle(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Kategori Subtes</label>
-                            <select value={matCategory} onChange={(e) => setMatCategory(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white font-bold">
-                              <option value="Penalaran Umum">Penalaran Umum</option>
-                              <option value="Pengetahuan Kuantitatif">Pengetahuan Kuantitatif</option>
-                              <option value="PBM & PPU">PBM & PPU</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Kategori / Subtes (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Penalaran Umum" value={matCategory} onChange={(e) => setMatCategory(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white font-bold" required />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-purple-900 mb-1">Isi Ringkasan / Deskripsi Materi</label>
-                          <textarea rows="4" placeholder="Tuliskan ringkasan materi atau rumus cepat..." value={matContent} onChange={(e) => setMatContent(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white" required></textarea>
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Isi Ringkasan / Deskripsi Materi</label>
+                          <textarea rows="4" placeholder="Tuliskan ringkasan materi atau rumus cepat..." value={matContent} onChange={(e) => setMatContent(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required></textarea>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-purple-900 mb-1">Link File / Modul (Opsional)</label>
-                          <input type="text" placeholder="https://drive.google.com/..." value={matLink} onChange={(e) => setMatLink(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white" />
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Link File / Modul (Opsional)</label>
+                          <input type="text" placeholder="https://drive.google.com/..." value={matLink} onChange={(e) => setMatLink(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" />
                         </div>
                         <div className="flex justify-end">
-                          <button type="submit" className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-md">Publikasikan Materi</button>
+                          <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md">Publikasikan Materi</button>
                         </div>
                       </form>
                     </div>
                   )}
 
-                  {/* TAMPILAN KUMPULAN MATERI & PREVIEW */}
-                  <div className="bg-white rounded-3xl border border-purple-100 p-8 space-y-6 shadow-sm">
+                  <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
                     <div>
-                      <h3 className="text-lg font-black text-purple-900 flex items-center gap-2"><BookOpen className="text-purple-600" size={20} /> Kumpulan Materi UTBK PK PM</h3>
+                      <h3 className="text-lg font-black text-sky-900 flex items-center gap-2"><BookOpen className="text-blue-600" size={20} /> Kumpulan Materi UTBK PK PM</h3>
                       <p className="text-xs text-slate-500">Modul siap baca dan ringkasan rumus cepat.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1354,12 +1302,12 @@ export default function DianMathLabApp() {
                         <p className="text-xs text-slate-400 italic py-6 text-center col-span-3">Belum ada materi yang diunggah.</p>
                       ) : (
                         utbkMaterials.map((m) => (
-                          <div key={m.id} className="p-5 bg-purple-50/50 border border-purple-200 rounded-2xl space-y-3 relative group">
-                            <span className="text-[10px] bg-purple-200 text-purple-800 px-2.5 py-0.5 rounded-full font-bold">{m.category}</span>
+                          <div key={m.id} className="p-5 bg-sky-50/50 border border-sky-200 rounded-2xl space-y-3 relative group">
+                            <span className="text-[10px] bg-sky-200 text-sky-800 px-2.5 py-0.5 rounded-full font-bold">{m.category}</span>
                             <h4 className="font-black text-slate-900 text-sm">{m.title}</h4>
                             <p className="text-xs text-slate-600 leading-relaxed">{m.content}</p>
                             {m.resource_link && (
-                              <a href={m.resource_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-purple-700 font-bold hover:underline">
+                              <a href={m.resource_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-700 font-bold hover:underline">
                                 <ExternalLink size={14} /> Buka Modul / Dokumen ↗
                               </a>
                             )}
@@ -1374,48 +1322,46 @@ export default function DianMathLabApp() {
                 </div>
               )}
 
-              {/* 3. SUB-MENU: INFORMASI TRY OUT IG & JALUR MANDIRI (DENGAN FORM UPLOAD & PREVIEW) */}
+              {/* 3. SUB-MENU: INFORMASI TRY OUT & JALUR MANDIRI */}
               {activeUtbkSubMenu === 'informasi' && (
                 <div className="space-y-6">
-                  {/* FORM UPLOAD INFORMASI OLEH ADMIN/TENTOR */}
                   {(userRole === 'admin' || userRole === 'tutor') && (
-                    <div className="bg-white rounded-3xl border border-purple-200 p-8 space-y-6 shadow-sm">
-                      <h3 className="text-lg font-black text-purple-900 flex items-center gap-2">
-                        <Info className="text-purple-600" size={20} /> Upload Informasi Try Out & Jalur Mandiri
+                    <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                      <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
+                        <Info className="text-blue-600" size={20} /> Upload Informasi Try Out & Jalur Mandiri
                       </h3>
                       <form onSubmit={handleSaveInfo} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Judul Informasi</label>
-                            <input type="text" placeholder="Contoh: TO Akbar SNBT 2026 / Info Mandiri Undip" value={infoTitle} onChange={(e) => setInfoTitle(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white" required />
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Judul Informasi</label>
+                            <input type="text" placeholder="Contoh: TO Akbar SNBT 2026 / Info Mandiri" value={infoTitle} onChange={(e) => setInfoTitle(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-purple-900 mb-1">Kategori Informasi</label>
-                            <select value={infoType} onChange={(e) => setInfoType(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white font-bold">
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Kategori Informasi</label>
+                            <select value={infoType} onChange={(e) => setInfoType(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white font-bold">
                               <option value="Instagram TO">Instagram Try Out (TO)</option>
                               <option value="Jalur Mandiri">Jalur Mandiri PTN</option>
                             </select>
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-purple-900 mb-1">Deskripsi / Keterangan Lengkap</label>
-                          <textarea rows="3" placeholder="Tuliskan detail jadwal, persyaratan, atau link pendaftaran..." value={infoDesc} onChange={(e) => setInfoDesc(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white" required></textarea>
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Deskripsi / Keterangan Lengkap</label>
+                          <textarea rows="3" placeholder="Tuliskan detail jadwal, persyaratan, atau link pendaftaran..." value={infoDesc} onChange={(e) => setInfoDesc(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" required></textarea>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-purple-900 mb-1">Link Tautan Medsos / Pendaftaran (URL)</label>
-                          <input type="text" placeholder="https://instagram.com/..." value={infoUrl} onChange={(e) => setInfoUrl(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-purple-200 rounded-xl bg-white" />
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Link Tautan Medsos / Pendaftaran (URL)</label>
+                          <input type="text" placeholder="https://instagram.com/..." value={infoUrl} onChange={(e) => setInfoUrl(e.target.value)} className="w-full px-4 py-2.5 text-xs border border-sky-200 rounded-xl bg-white" />
                         </div>
                         <div className="flex justify-end">
-                          <button type="submit" className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-md">Publikasikan Informasi</button>
+                          <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md">Publikasikan Informasi</button>
                         </div>
                       </form>
                     </div>
                   )}
 
-                  {/* TAMPILAN INFORMASI & PREVIEW */}
-                  <div className="bg-white rounded-3xl border border-purple-100 p-8 space-y-6 shadow-sm">
+                  <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
                     <div>
-                      <h3 className="text-lg font-black text-purple-900 flex items-center gap-2"><Info className="text-purple-600" size={20} /> Informasi Try Out (TO) IG & Jalur Mandiri</h3>
+                      <h3 className="text-lg font-black text-sky-900 flex items-center gap-2"><Info className="text-blue-600" size={20} /> Informasi Try Out (TO) IG & Jalur Mandiri</h3>
                       <p className="text-xs text-slate-500">Update berkala seputar jadwal try out nasional dan info seleksi mandiri kampus.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1423,12 +1369,12 @@ export default function DianMathLabApp() {
                         <p className="text-xs text-slate-400 italic py-6 text-center col-span-2">Belum ada informasi yang diunggah.</p>
                       ) : (
                         utbkInfos.map((inf) => (
-                          <div key={inf.id} className="p-6 bg-gradient-to-br from-pink-50/50 to-purple-50/50 border border-pink-200 rounded-3xl space-y-3 relative group">
-                            <span className="px-3 py-1 bg-pink-500 text-white text-[10px] font-bold rounded-xl shadow-xs">{inf.info_type}</span>
+                          <div key={inf.id} className="p-6 bg-gradient-to-br from-sky-50 to-blue-50/50 border border-sky-200 rounded-3xl space-y-3 relative group">
+                            <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-xl shadow-xs">{inf.info_type}</span>
                             <h4 className="font-black text-slate-900 text-base">{inf.title}</h4>
                             <p className="text-xs text-slate-600 leading-relaxed">{inf.description}</p>
                             {inf.target_url && (
-                              <a href={inf.target_url} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-md">Kunjungi Tautan ↗</a>
+                              <a href={inf.target_url} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md">Kunjungi Tautan ↗</a>
                             )}
                             {(userRole === 'admin' || userRole === 'tutor') && (
                               <button onClick={() => handleDeleteInfo(inf.id)} className="absolute top-4 right-4 p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Hapus Informasi"><Trash2 size={14} /></button>
@@ -1459,9 +1405,9 @@ export default function DianMathLabApp() {
                     <div key={clientUser.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
                       <div>
                         <p className="font-bold text-xs text-slate-900">{clientUser.full_name || 'Siswa'} ({clientUser.email})</p>
-                        <p className="text-[10px] text-purple-600 font-bold">Status UTBK: {clientUser.utbk_access ? '✅ Diberikan Akses' : '🔒 Terkunci'}</p>
+                        <p className="text-[10px] text-blue-600 font-bold">Status UTBK: {clientUser.utbk_access ? '✅ Diberikan Akses' : '🔒 Terkunci'}</p>
                       </div>
-                      <button onClick={() => handleToggleUtbkAccess(clientUser.id, clientUser.utbk_access)} className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xs ${clientUser.utbk_access ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-purple-600 text-white'}`}>
+                      <button onClick={() => handleToggleUtbkAccess(clientUser.id, clientUser.utbk_access)} className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xs ${clientUser.utbk_access ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-blue-600 text-white'}`}>
                         {clientUser.utbk_access ? 'Cabut Akses UTBK' : 'Izinkan Akses UTBK'}
                       </button>
                     </div>
@@ -1680,7 +1626,7 @@ export default function DianMathLabApp() {
       {modalConfig.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-sky-100 text-center space-y-4">
-            <div className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center shadow-md bg-purple-600 text-white">
+            <div className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center shadow-md bg-blue-600 text-white">
               {modalConfig.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
             </div>
             <h3 className="text-lg font-black text-sky-900">{modalConfig.title}</h3>
@@ -1692,7 +1638,7 @@ export default function DianMathLabApp() {
                   <button onClick={modalConfig.onConfirm} className="flex-1 py-3 bg-rose-600 text-white rounded-xl text-xs font-bold">Ya, Lanjutkan</button>
                 </>
               ) : (
-                <button onClick={closeModal} className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-bold">Mengerti</button>
+                <button onClick={closeModal} className="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-bold">Mengerti</button>
               )}
             </div>
           </div>

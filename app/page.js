@@ -1,62 +1,35 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { 
-  Home, 
-  Users, 
-  Calendar, 
-  CheckSquare, 
-  X, 
-  Plus, 
-  Trash2, 
-  Edit3,
-  Clock, 
-  CheckCircle2,
-  Mail,
-  Lock,
-  Shield,
-  Sparkles,
-  UserCheck,
-  Eye,
-  EyeOff,
-  LogOut,
-  Settings,
-  KeyRound,
-  Bell,
-  CalendarPlus,
-  AlertCircle,
-  FileSpreadsheet,
-  Download,
-  Upload,
-  BookOpen,
-  Info,
-  Award,
-  TrendingUp,
-  ExternalLink,
-  Image as ImageIcon
+import { 
+  Home, Users, Calendar, CheckSquare, X, Plus, Trash2, Edit3,
+  Clock, CheckCircle2, Mail, Lock, Shield, Sparkles, UserCheck,
+  Eye, EyeOff, LogOut, Settings, KeyRound, Bell, CalendarPlus,
+  AlertCircle, FileSpreadsheet, Download, Upload, BookOpen, Info,
+  Award, TrendingUp, ExternalLink, Image as ImageIcon, FileText, Search, Play
 } from 'lucide-react';
 
 export default function DianMathLabApp() {
   const [session, setSession] = useState(null);
-  const [authMode, setAuthMode] = useState('login'); 
-   
+  const [authMode, setAuthMode] = useState('login'); 
+   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('client'); 
+  const [selectedRole, setSelectedRole] = useState('client'); 
   const [authMessage, setAuthMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // State Navigasi & UI dengan transisi halus
+  // State Navigasi & UI dengan transisi halus & animasi latar belakang
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [activeUtbkSubMenu, setActiveUtbkSubMenu] = useState('latihan'); 
-   
+   
   // State Modal Interaktif Custom yang Dipercantik
   const [modalConfig, setModalConfig] = useState({ show: false, title: '', message: '', type: 'info', onConfirm: null });
 
-  // State Floating WhatsApp Menu (Diatur false agar tertutup dulu di awal)
+  // State Floating WhatsApp Menu
   const [showWaMenu, setShowWaMenu] = useState(false);
 
   // State Data Siswa
@@ -102,7 +75,7 @@ export default function DianMathLabApp() {
   const [presDuration, setPresDuration] = useState('2');
   const [editingPresenceId, setEditingPresenceId] = useState(null);
 
-  // --- STATE KHUSUS UTBK PK PM ---
+  // --- STATE KHUSUS UTBK PK PM (Revisi Input Text & Filter Tabel Soal) ---
   const [utbkQuestions, setUtbkQuestions] = useState([]);
   const [utbkMaterials, setUtbkMaterials] = useState([]);
   const [utbkInfos, setUtbkInfos] = useState([]);
@@ -110,7 +83,12 @@ export default function DianMathLabApp() {
   const [selectedPackage, setSelectedPackage] = useState('Paket 1');
   const [selectedSubtest, setSelectedSubtest] = useState('Penalaran Umum');
   
-  // Form Kelola Soal (Admin/Tentor)
+  // Filter & Pagination Daftar Soal Admin
+  const [filterQPackage, setFilterQPackage] = useState('Semua');
+  const [qRowsPerPage, setQRowsPerPage] = useState('25');
+  const [qCurrentPage, setQCurrentPage] = useState(1);
+  
+  // Form Kelola Soal (Admin/Tentor) - Text Bebas
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [qPackage, setQPackage] = useState('Paket 1');
   const [qSubtest, setQSubtest] = useState('Penalaran Umum');
@@ -125,16 +103,20 @@ export default function DianMathLabApp() {
   const [qExp, setQExp] = useState('');
   const [examDurationMinutes, setExamDurationMinutes] = useState(45);
 
-  // Form Kelola Materi & Informasi (Admin/Tentor)
+  // Form Kelola Materi & Informasi (Kategori Text Bebas & Upload File/PDF)
   const [matTitle, setMatTitle] = useState('');
   const [matDesc, setMatDesc] = useState('');
   const [matCategory, setMatCategory] = useState('Modul Utama');
+  const [matFileUrl, setMatFileUrl] = useState('');
+  const [matThumbnail, setMatThumbnail] = useState('');
+
   const [infoTitle, setInfoTitle] = useState('');
   const [infoLink, setInfoLink] = useState('');
   const [infoCategory, setInfoCategory] = useState('Try Out Instagram');
 
-  // Status Pengerjaan Ujian Siswa
+  // Status Pengerjaan Ujian Siswa & Preview POV Admin
   const [isExamActive, setIsExamActive] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [currentExamQuestions, setCurrentExamQuestions] = useState([]);
   const [currentExamIndex, setCurrentExamIndex] = useState(0);
   const [studentAnswers, setStudentAnswers] = useState({});
@@ -158,7 +140,7 @@ export default function DianMathLabApp() {
   // Timer Ujian Real-Time
   useEffect(() => {
     let timer;
-    if (isExamActive && timeLeft > 0) {
+    if (isExamActive && timeLeft > 0 && !isPreviewMode) {
       timer = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -171,7 +153,7 @@ export default function DianMathLabApp() {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [isExamActive, timeLeft]);
+  }, [isExamActive, timeLeft, isPreviewMode]);
 
   const fetchAppData = async (currentSession) => {
     const userEmail = currentSession.user.email;
@@ -179,7 +161,7 @@ export default function DianMathLabApp() {
     const currentUserId = currentSession.user.id;
 
     const { data: profileData } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
-     
+     
     let activeRole = defaultMetaRole;
     if (profileData) {
       activeRole = profileData.role || defaultMetaRole;
@@ -200,7 +182,7 @@ export default function DianMathLabApp() {
       setAllProfiles(profilesList);
       setTutorsList(profilesList.filter(p => p.role === 'tutor' || p.role === 'admin'));
     }
-       
+       
     let studentQuery = supabase.from('students').select('*');
     if (activeRole === 'tutor') {
       studentQuery = studentQuery.eq('tutor_id', currentUserId);
@@ -225,7 +207,7 @@ export default function DianMathLabApp() {
       if (activeRole === 'client') {
         const currentStudent = studentData?.find(s => s.email?.toLowerCase() === userEmail.toLowerCase());
         if (currentStudent) {
-          const filtered = presenceData.filter(p => 
+          const filtered = presenceData.filter(p => 
             p.student_name?.toLowerCase() === currentStudent.full_name?.toLowerCase() ||
             p.student_email?.toLowerCase() === userEmail.toLowerCase()
           );
@@ -241,7 +223,6 @@ export default function DianMathLabApp() {
     const { data: presList } = await supabase.from('presences').select('*');
     if (presList) setPresencesList(presList);
 
-    // Fetch Soal, Materi, Informasi, & Riwayat UTBK
     const { data: utbkQData } = await supabase.from('utbk_questions').select('*');
     if (utbkQData) setUtbkQuestions(utbkQData);
 
@@ -298,7 +279,7 @@ export default function DianMathLabApp() {
           utbk_access: false
         }]);
       }
-       
+       
       showAlert('Pendaftaran Berhasil!', 'Link aktivasi telah dikirim ke email Anda. Silakan buka kotak masuk atau folder spam email Anda untuk mengaktifkan akun sebelum melakukan login.', 'success');
       setAuthMode('login');
     } catch (error) {
@@ -401,15 +382,18 @@ export default function DianMathLabApp() {
     };
 
     if (editingQuestionId) {
-      const { error } = await supabase.from('utbk_questions').update(questionPayload).eq('id', editingQuestionId);
-      if (error) {
-        showAlert('Gagal', error.message, 'warning');
-      } else {
-        setEditingQuestionId(null);
-        resetQuestionForm();
-        fetchAppData(session);
-        showAlert('Berhasil', 'Soal UTBK berhasil diperbarui.', 'success');
-      }
+      showAlert('Konfirmasi Simpan', 'Simpan perubahan pada soal ini?', 'warning', async () => {
+        closeModal();
+        const { error } = await supabase.from('utbk_questions').update(questionPayload).eq('id', editingQuestionId);
+        if (error) {
+          showAlert('Gagal', error.message, 'warning');
+        } else {
+          setEditingQuestionId(null);
+          resetQuestionForm();
+          fetchAppData(session);
+          showAlert('Berhasil', 'Soal UTBK berhasil diperbarui.', 'success');
+        }
+      });
     } else {
       const { error } = await supabase.from('utbk_questions').insert([questionPayload]);
       if (error) {
@@ -427,26 +411,29 @@ export default function DianMathLabApp() {
   };
 
   const handleEditQuestionClick = (q) => {
-    setEditingQuestionId(q.id);
-    setQPackage(q.package_name || 'Paket 1');
-    setQSubtest(q.subtest || 'Penalaran Umum');
-    setQText(q.question_text || '');
-    setQImage(q.image_url || '');
-    setOptA(q.option_a || '');
-    setOptB(q.option_b || '');
-    setOptC(q.option_c || '');
-    setOptD(q.option_d || '');
-    setOptE(q.option_e || '');
-    setQAns(q.correct_answer || 'A');
-    setQExp(q.explanation || '');
-    setExamDurationMinutes(q.duration_minutes || 45);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showAlert('Konfirmasi Edit', 'Edit soal ini?', 'warning', () => {
+      closeModal();
+      setEditingQuestionId(q.id);
+      setQPackage(q.package_name || 'Paket 1');
+      setQSubtest(q.subtest || 'Penalaran Umum');
+      setQText(q.question_text || '');
+      setQImage(q.image_url || '');
+      setOptA(q.option_a || '');
+      setOptB(q.option_b || '');
+      setOptC(q.option_c || '');
+      setOptD(q.option_d || '');
+      setOptE(q.option_e || '');
+      setQAns(q.correct_answer || 'A');
+      setQExp(q.explanation || '');
+      setExamDurationMinutes(q.duration_minutes || 45);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   };
 
   const handleDeleteQuestion = (id) => {
-    showAlert('Konfirmasi Hapus', 'Hapus soal ini dari paket latihan?', 'warning', async () => {
-      const { error } = await supabase.from('utbk_questions').delete().eq('id', id);
+    showAlert('Konfirmasi Hapus', 'Hapus soal ini dari database?', 'warning', async () => {
       closeModal();
+      const { error } = await supabase.from('utbk_questions').delete().eq('id', id);
       if (!error) {
         fetchAppData(session);
         showAlert('Terhapus', 'Soal berhasil dihapus.', 'success');
@@ -456,8 +443,21 @@ export default function DianMathLabApp() {
     });
   };
 
+  const handleDeletePackageQuestions = (packageName) => {
+    showAlert('Konfirmasi Hapus Paket', `Apakah Anda yakin ingin menghapus SELURUH soal dalam ${packageName}?`, 'warning', async () => {
+      closeModal();
+      const { error } = await supabase.from('utbk_questions').delete().eq('package_name', packageName);
+      if (!error) {
+        fetchAppData(session);
+        showAlert('Terhapus', `Semua soal dalam ${packageName} berhasil dihapus.`, 'success');
+      } else {
+        showAlert('Gagal', error.message, 'warning');
+      }
+    });
+  };
+
   const downloadQuestionTemplate = () => {
-    const csvContent = "data:text/csv;charset=utf-8,package_name,subtest,question_text,image_url,option_a,option_b,option_c,option_d,option_e,correct_answer,explanation,duration_minutes\nPaket 1,Penalaran Umum,Contoh Pertanyaan Soal Disini?,https://example.com/gambar.png,Pilihan A,Pilihan B,Pilihan C,Pilihan D,Pilihan E,A,Pembahasan soal disini,45";
+    const csvContent = "data:text/csv;charset=utf-8,package_name;subtest;question_text;image_url;option_a;option_b;option_c;option_d;option_e;correct_answer;explanation;duration_minutes\nPaket 1;Penalaran Umum;Contoh Pertanyaan Soal Disini?;none;Pilihan A;Pilihan B;Pilihan C;Pilihan D;Pilihan E;A;Pembahasan soal disini;45";
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -479,7 +479,7 @@ export default function DianMathLabApp() {
       for (let i = 1; i < lines.length; i++) {
         const row = lines[i].trim();
         if (!row) continue;
-        const cols = row.split(',');
+        const cols = row.split(';');
         if (cols.length >= 11) {
           const payload = {
             package_name: cols[0]?.trim() || 'Paket 1',
@@ -505,12 +505,14 @@ export default function DianMathLabApp() {
     reader.readAsText(file);
   };
 
-  const handleImageFileChange = (e) => {
+  const handleImageFileChange = (e, targetType = 'question') => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
-      setQImage(uploadEvent.target.result);
+      if (targetType === 'question') setQImage(uploadEvent.target.result);
+      if (targetType === 'material') setMatThumbnail(uploadEvent.target.result);
+      if (targetType === 'doc') setMatFileUrl(uploadEvent.target.result);
     };
     reader.readAsDataURL(file);
   };
@@ -521,10 +523,12 @@ export default function DianMathLabApp() {
     const { error } = await supabase.from('utbk_materials').insert([{
       title: matTitle,
       description: matDesc,
-      category: matCategory
+      category: matCategory,
+      file_url: matFileUrl || null,
+      thumbnail_url: matThumbnail || null
     }]);
     if (!error) {
-      setMatTitle(''); setMatDesc('');
+      setMatTitle(''); setMatDesc(''); setMatFileUrl(''); setMatThumbnail('');
       fetchAppData(session);
       showAlert('Berhasil', 'Materi belajar baru berhasil diunggah.', 'success');
     } else {
@@ -534,8 +538,8 @@ export default function DianMathLabApp() {
 
   const handleDeleteMaterial = async (id) => {
     showAlert('Konfirmasi Hapus', 'Hapus materi ini?', 'warning', async () => {
-      await supabase.from('utbk_materials').delete().eq('id', id);
       closeModal();
+      await supabase.from('utbk_materials').delete().eq('id', id);
       fetchAppData(session);
       showAlert('Terhapus', 'Materi berhasil dihapus.', 'success');
     });
@@ -560,17 +564,17 @@ export default function DianMathLabApp() {
 
   const handleDeleteInfo = async (id) => {
     showAlert('Konfirmasi Hapus', 'Hapus informasi ini?', 'warning', async () => {
-      await supabase.from('utbk_infos').delete().eq('id', id);
       closeModal();
+      await supabase.from('utbk_infos').delete().eq('id', id);
       fetchAppData(session);
       showAlert('Terhapus', 'Informasi berhasil dihapus.', 'success');
     });
   };
 
-  const startExam = () => {
+  const startExam = (preview = false) => {
     const filtered = utbkQuestions.filter(q => q.package_name === selectedPackage && q.subtest === selectedSubtest);
     if (filtered.length === 0) {
-      showAlert('Perhatian', `Belum ada soal untuk ${selectedPackage} - ${selectedSubtest}. Silakan hubungi tentor.`, 'warning');
+      showAlert('Perhatian', `Belum ada soal untuk ${selectedPackage} - ${selectedSubtest}. Silakan tambahkan soal terlebih dahulu.`, 'warning');
       return;
     }
     const duration = filtered[0]?.duration_minutes || 45;
@@ -579,6 +583,7 @@ export default function DianMathLabApp() {
     setStudentAnswers({});
     setTimeLeft(duration * 60);
     setIsExamActive(true);
+    setIsPreviewMode(preview);
     setExamResult(null);
   };
 
@@ -605,9 +610,12 @@ export default function DianMathLabApp() {
 
     setExamResult(resultData);
     setIsExamActive(false);
+    setIsPreviewMode(false);
 
-    await supabase.from('utbk_history').insert([resultData]);
-    fetchAppData(session);
+    if (!isPreviewMode) {
+      await supabase.from('utbk_history').insert([resultData]);
+      fetchAppData(session);
+    }
     showAlert('Ujian Selesai', `Hasil ujian Anda telah disimpan. Skor UTBK Anda: ${score}`, 'success');
   };
 
@@ -642,8 +650,8 @@ export default function DianMathLabApp() {
 
   const handleDeleteStudent = (id) => {
     showAlert('Konfirmasi Hapus', 'Hapus siswa ini dari database?', 'warning', async () => {
-      const { error } = await supabase.from('students').delete().eq('id', id);
       closeModal();
+      const { error } = await supabase.from('students').delete().eq('id', id);
       if (!error) {
         fetchAppData(session);
         showAlert('Terhapus', 'Data siswa berhasil dihapus.', 'success');
@@ -679,8 +687,8 @@ export default function DianMathLabApp() {
 
   const handleDeleteSchedule = (id) => {
     showAlert('Konfirmasi Hapus', 'Hapus jadwal ini?', 'warning', async () => {
-      const { error } = await supabase.from('schedules').delete().eq('id', id);
       closeModal();
+      const { error } = await supabase.from('schedules').delete().eq('id', id);
       if (!error) {
         fetchAppData(session);
         showAlert('Terhapus', 'Jadwal berhasil dihapus.', 'success');
@@ -748,18 +756,21 @@ export default function DianMathLabApp() {
   };
 
   const handleEditPresenceClick = (item) => {
-    setEditingPresenceId(item.id);
-    setSelectedStudent(item.student_name || '');
-    setPresDate(item.date || '');
-    setPresObjective(item.objective || '');
-    setPresMaterial(item.material || '');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showAlert('Konfirmasi Edit', 'Edit data presensi ini?', 'warning', () => {
+      closeModal();
+      setEditingPresenceId(item.id);
+      setSelectedStudent(item.student_name || '');
+      setPresDate(item.date || '');
+      setPresObjective(item.objective || '');
+      setPresMaterial(item.material || '');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   };
 
   const handleDeletePresence = (id) => {
     showAlert('Konfirmasi Hapus', 'Hapus data presensi ini?', 'warning', async () => {
-      const { error } = await supabase.from('presence_records').delete().eq('id', id);
       closeModal();
+      const { error } = await supabase.from('presence_records').delete().eq('id', id);
       if (!error) {
         fetchAppData(session);
         showAlert('Terhapus', 'Data presensi berhasil dihapus.', 'success');
@@ -827,10 +838,11 @@ export default function DianMathLabApp() {
   if (!session) {
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-sky-400 via-sky-300 to-blue-500 text-slate-800 font-sans p-4 overflow-hidden">
+        {/* Latar Belakang Animasi Dinamis */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }}></div>
-          <div className="absolute -bottom-24 -right-24 w-[30rem] h-[30rem] bg-sky-200/30 rounded-full blur-3xl animate-bounce" style={{ animationDuration: '8s' }}></div>
-          <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-blue-300/20 rounded-full blur-2xl animate-ping" style={{ animationDuration: '6s' }}></div>
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }}></div>
+          <div className="absolute -bottom-24 -right-24 w-[35rem] h-[35rem] bg-sky-200/40 rounded-full blur-3xl animate-bounce" style={{ animationDuration: '7s' }}></div>
+          <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-blue-300/30 rounded-full blur-2xl animate-ping" style={{ animationDuration: '6s' }}></div>
         </div>
 
         <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-xl border border-sky-100 rounded-3xl p-8 shadow-2xl space-y-6 transition-all duration-700 ease-in-out transform hover:scale-[1.01]">
@@ -972,6 +984,11 @@ export default function DianMathLabApp() {
   const limitNum = parseInt(rowsPerPage);
   const paginatedRecords = limitNum === 0 ? filteredRecords : filteredRecords.slice((currentPage - 1) * limitNum, currentPage * limitNum);
 
+  // Filter & Pagination Soal untuk Admin
+  const filteredQList = utbkQuestions.filter(q => filterQPackage === 'Semua' ? true : q.package_name === filterQPackage);
+  const qLimitNum = parseInt(qRowsPerPage) || 25;
+  const paginatedQList = filteredQList.slice((qCurrentPage - 1) * qLimitNum, qCurrentPage * qLimitNum);
+
   return (
     <div className="flex h-screen bg-sky-50/50 text-slate-800 font-sans antialiased overflow-hidden relative">
 
@@ -1071,9 +1088,10 @@ export default function DianMathLabApp() {
           {/* DASHBOARD */}
           {activeMenu === 'dashboard' && (
             <div className="space-y-6 transition-all duration-500 ease-in-out">
-              <div className="bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-3xl p-8 shadow-xl">
-                <h2 className="text-2xl font-black mb-2">Selamat Datang di Dian Math Lab 🚀</h2>
-                <p className="text-sky-100 text-xs md:text-sm">Sistem operasional les privat matematika terpadu & portal persiapan UTBK PK PM.</p>
+              <div className="bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
+                <h2 className="text-2xl font-black mb-2 relative z-10">Selamat Datang di Dian Math Lab 🚀</h2>
+                <p className="text-sky-100 text-xs md:text-sm relative z-10">Sistem operasional les privat matematika terpadu & portal persiapan UTBK PK PM.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -1104,16 +1122,16 @@ export default function DianMathLabApp() {
                 <div className="space-y-6">
                   {(userRole === 'admin' || userRole === 'tutor') && (
                     <div className="bg-white rounded-3xl border border-sky-200 p-8 space-y-6 shadow-sm">
-                      <div className="flex justify-between items-center border-b border-sky-100 pb-4">
+                      <div className="flex justify-between items-center border-b border-sky-100 pb-4 flex-wrap gap-3">
                         <div>
                           <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
                             <FileSpreadsheet className="text-sky-600" size={20} /> Panel Kelola & Impor Soal UTBK
                           </h3>
-                          <p className="text-xs text-slate-500">Tambah, Edit, Hapus, Upload gambar (JPG, PNG, JPEG/Link), atau Impor massal via Excel/CSV.</p>
+                          <p className="text-xs text-slate-500">Tambah, Edit, Hapus, Upload gambar, atau Impor massal via Excel/CSV dengan format titik koma (;).</p>
                         </div>
                         <div className="flex gap-2">
                           <button onClick={downloadQuestionTemplate} className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-100">
-                            <Download size={14} /> Template Excel
+                            <Download size={14} /> Template Excel (.CSV)
                           </button>
                           <label className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-sky-700 shadow-md">
                             <Upload size={14} /> Upload CSV
@@ -1126,20 +1144,12 @@ export default function DianMathLabApp() {
                         <h4 className="font-bold text-xs text-sky-950">{editingQuestionId ? '✏️ Edit Soal UTBK' : '➕ Tambah Soal Baru Manual'}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-sky-900 mb-1">Pilih Paket</label>
-                            <select value={qPackage} onChange={(e) => setQPackage(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold">
-                              <option value="Paket 1">Paket 1</option>
-                              <option value="Paket 2">Paket 2</option>
-                              <option value="Paket 3">Paket 3</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Nama Paket (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Paket 1" value={qPackage} onChange={(e) => setQPackage(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-sky-900 mb-1">Subtes</label>
-                            <select value={qSubtest} onChange={(e) => setQSubtest(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold">
-                              <option value="Penalaran Umum">Penalaran Umum</option>
-                              <option value="Pengetahuan Kuantitatif">Pengetahuan Kuantitatif</option>
-                              <option value="PBM & PPU">PBM & PPU</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Subtes (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Penalaran Umum" value={qSubtest} onChange={(e) => setQSubtest(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold" required />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-sky-900 mb-1">Durasi Ujian (Menit)</label>
@@ -1155,7 +1165,7 @@ export default function DianMathLabApp() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-xs font-bold text-sky-900 mb-1">Upload Gambar (JPG, PNG, JPEG)</label>
-                            <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleImageFileChange} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-100 file:text-sky-700 hover:file:bg-sky-200" />
+                            <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleImageFileChange(e, 'question')} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-100 file:text-sky-700 hover:file:bg-sky-200" />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-sky-900 mb-1">Atau Masukkan Tautan / Link Gambar</label>
@@ -1197,10 +1207,20 @@ export default function DianMathLabApp() {
                         </div>
                       </form>
 
+                      {/* FILTER & DAFTAR SOAL ADMIN DENGAN PAGINATION KELIPATAN 25 */}
                       <div className="space-y-3 pt-2">
-                        <h4 className="font-bold text-xs text-sky-900">Preview & Daftar Soal di Database ({utbkQuestions.length})</h4>
-                        <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
-                          {utbkQuestions.map((q) => (
+                        <div className="flex justify-between items-center flex-wrap gap-2">
+                          <h4 className="font-bold text-xs text-sky-900">Daftar Soal di Database ({utbkQuestions.length})</h4>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span>Filter Paket:</span>
+                            <input type="text" placeholder="Semua Paket" value={filterQPackage} onChange={(e) => setFilterQPackage(e.target.value)} className="px-3 py-1.5 border border-sky-200 rounded-xl bg-white text-xs font-bold" />
+                            <span>Tampil:</span>
+                            <input type="number" min="5" step="25" value={qRowsPerPage} onChange={(e) => setQRowsPerPage(e.target.value)} className="w-20 px-3 py-1.5 border border-sky-200 rounded-xl bg-white text-xs font-bold" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                          {paginatedQList.map((q) => (
                             <div key={q.id} className="p-4 bg-sky-50/40 border border-sky-100 rounded-2xl flex justify-between items-center text-xs shadow-xs">
                               <div className="space-y-1">
                                 <span className="font-bold text-sky-800 bg-white px-2 py-0.5 rounded border border-sky-200">[{q.package_name} - {q.subtest}]</span>
@@ -1208,8 +1228,9 @@ export default function DianMathLabApp() {
                                 {q.image_url && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><ImageIcon size={12} /> Ada Gambar Pendukung</span>}
                               </div>
                               <div className="flex gap-2">
-                                <button onClick={() => handleEditQuestionClick(q)} className="p-2 bg-amber-50 text-amber-700 rounded-xl"><Edit3 size={14} /></button>
-                                <button onClick={() => handleDeleteQuestion(q.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={14} /></button>
+                                <button onClick={() => handleEditQuestionClick(q)} className="p-2 bg-amber-50 text-amber-700 rounded-xl" title="Edit Soal"><Edit3 size={14} /></button>
+                                <button onClick={() => handleDeleteQuestion(q.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Soal"><Trash2 size={14} /></button>
+                                <button onClick={() => handleDeletePackageQuestions(q.package_name)} className="p-2 bg-rose-700 text-white rounded-xl text-[10px] font-bold" title="Hapus 1 Paket">Hapus Paket</button>
                               </div>
                             </div>
                           ))}
@@ -1218,7 +1239,8 @@ export default function DianMathLabApp() {
                     </div>
                   )}
 
-                  {userRole === 'client' && !isExamActive && !examResult && (
+                  {/* MENU UTBK UNTUK SISWA & PREVIEW POV ADMIN */}
+                  {(!isExamActive && !examResult) && (
                     <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm text-center">
                       <div className="max-w-md mx-auto space-y-4">
                         <div className="w-16 h-16 bg-sky-100 text-sky-600 rounded-3xl mx-auto flex items-center justify-center">
@@ -1229,32 +1251,38 @@ export default function DianMathLabApp() {
                         
                         <div className="grid grid-cols-2 gap-3 text-left">
                           <div>
-                            <label className="block text-xs font-bold text-sky-900 mb-1">Pilih Paket</label>
-                            <select value={selectedPackage} onChange={(e) => setSelectedPackage(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-sky-200 rounded-xl bg-sky-50/50 font-bold">
-                              <option value="Paket 1">Paket 1</option>
-                              <option value="Paket 2">Paket 2</option>
-                              <option value="Paket 3">Paket 3</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Nama Paket</label>
+                            <input type="text" value={selectedPackage} onChange={(e) => setSelectedPackage(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-sky-200 rounded-xl bg-sky-50/50 font-bold" />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-sky-900 mb-1">Subtes</label>
-                            <select value={selectedSubtest} onChange={(e) => setSelectedSubtest(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-sky-200 rounded-xl bg-sky-50/50 font-bold">
-                              <option value="Penalaran Umum">Penalaran Umum</option>
-                              <option value="Pengetahuan Kuantitatif">Pengetahuan Kuantitatif</option>
-                              <option value="PBM & PPU">PBM & PPU</option>
-                            </select>
+                            <input type="text" value={selectedSubtest} onChange={(e) => setSelectedSubtest(e.target.value)} className="w-full px-3 py-2.5 text-xs border border-sky-200 rounded-xl bg-sky-50/50 font-bold" />
                           </div>
                         </div>
 
-                        <button onClick={startExam} className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-sky-500/30 transition-all">
-                          Mulai Kerjakan Soal Sekarang 🚀
-                        </button>
+                        <div className="flex gap-3 pt-2">
+                          <button onClick={() => startExam(false)} className="flex-1 py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-sky-500/30 transition-all">
+                            Mulai Kerjakan Soal 🚀
+                          </button>
+                          {(userRole === 'admin' || userRole === 'tutor') && (
+                            <button onClick={() => startExam(true)} className="px-5 py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl text-xs font-bold shadow-lg flex items-center gap-1">
+                              <Play size={14} /> Preview POV Siswa
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
 
+                  {/* KERTAS UJIAN REAL-TIME & PREVIEW MODE */}
                   {isExamActive && currentExamQuestions.length > 0 && (
-                    <div className="bg-white rounded-3xl border border-sky-200 p-8 space-y-6 shadow-xl">
+                    <div className="bg-white rounded-3xl border border-sky-200 p-8 space-y-6 shadow-xl relative">
+                      {isPreviewMode && (
+                        <div className="bg-amber-100 text-amber-900 px-4 py-2 rounded-xl text-xs font-black flex items-center justify-between border border-amber-300">
+                          <span>🔍 MODE PREVIEW (Melihat Tampilan Ujian POV Siswa)</span>
+                          <button onClick={() => { setIsExamActive(false); setIsPreviewMode(false); }} className="px-3 py-1 bg-amber-600 text-white rounded-lg text-[10px]">Tutup Preview</button>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center border-b border-sky-100 pb-4">
                         <div>
                           <h3 className="text-sm font-black text-sky-900">{selectedPackage} • {selectedSubtest}</h3>
@@ -1317,11 +1345,12 @@ export default function DianMathLabApp() {
                     </div>
                   )}
 
+                  {/* DASHBOARD PROGRES & RIWAYAT (GRAFIK UNTUK ADMIN/TENTOR) */}
                   <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-4 shadow-sm">
                     <h3 className="text-lg font-black text-sky-900 flex items-center gap-2">
-                      <TrendingUp className="text-sky-600" size={20} /> Dashboard Progres & Riwayat Latihan Anda
+                      <TrendingUp className="text-sky-600" size={20} /> {(userRole === 'admin' || userRole === 'tutor') ? 'Progres & Riwayat Latihan Seluruh Siswa' : 'Dashboard Progres & Riwayat Latihan Anda'}
                     </h3>
-                    <p className="text-xs text-slate-500">Catatan perkembangan skor try out dari waktu ke waktu beserta tanggal pengerjaan.</p>
+                    <p className="text-xs text-slate-500">Catatan perkembangan skor try out dari waktu ke waktu.</p>
                     
                     <div className="space-y-3 pt-2">
                       {utbkHistory.length === 0 ? (
@@ -1330,12 +1359,17 @@ export default function DianMathLabApp() {
                         utbkHistory.map((h, i) => (
                           <div key={i} className="p-4 rounded-2xl border border-sky-100 bg-sky-50/30 flex justify-between items-center text-xs">
                             <div>
-                              <p className="font-bold text-sky-950">{h.package_name} • {h.subtest}</p>
+                              <p className="font-bold text-sky-950">{h.package_name} • {h.subtest} {(userRole === 'admin' || userRole === 'tutor') && <span className="text-sky-600">({h.user_email})</span>}</p>
                               <p className="text-[10px] text-slate-500 mt-0.5">📅 Tanggal: {new Date(h.date_taken).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                             </div>
-                            <div className="text-right">
-                              <span className="text-base font-black text-sky-700">{h.score} Poin</span>
-                              <p className="text-[10px] text-slate-500">Benar {h.correct_answers}/{h.total_questions}</p>
+                            <div className="text-right flex items-center gap-3">
+                              <div className="w-24 bg-sky-200 h-2.5 rounded-full overflow-hidden hidden md:block">
+                                <div className="bg-sky-600 h-full rounded-full" style={{ width: `${Math.min(100, (h.score / 1000) * 100)}%` }}></div>
+                              </div>
+                              <div>
+                                <span className="text-base font-black text-sky-700">{h.score} Poin</span>
+                                <p className="text-[10px] text-slate-500">Benar {h.correct_answers}/{h.total_questions}</p>
+                              </div>
                             </div>
                           </div>
                         ))
@@ -1357,17 +1391,23 @@ export default function DianMathLabApp() {
                             <input type="text" placeholder="Contoh: Modul Rahasia Aljabar" value={matTitle} onChange={(e) => setMatTitle(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-sky-900 mb-1">Kategori</label>
-                            <select value={matCategory} onChange={(e) => setMatCategory(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold">
-                              <option value="Modul Utama">Modul Utama</option>
-                              <option value="Rumus Cepat">Rumus Cepat</option>
-                              <option value="Tips & Trik">Tips & Trik</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Kategori (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Modul Utama / Rumus Cepat" value={matCategory} onChange={(e) => setMatCategory(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold" required />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Upload Dokumen / PDF Materi</label>
+                            <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleImageFileChange(e, 'doc')} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-100 file:text-sky-700" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Upload Gambar / Thumbnail Menarik</label>
+                            <input type="file" accept="image/*" onChange={(e) => handleImageFileChange(e, 'material')} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-100 file:text-sky-700" />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-sky-900 mb-1">Deskripsi / Ringkasan / Link Materi</label>
-                          <textarea rows="3" placeholder="Ketik ringkasan atau tautan dokumen materi..." value={matDesc} onChange={(e) => setMatDesc(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required></textarea>
+                          <label className="block text-xs font-bold text-sky-900 mb-1">Deskripsi / Ringkasan Materi</label>
+                          <textarea rows="3" placeholder="Ketik ringkasan materi..." value={matDesc} onChange={(e) => setMatDesc(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required></textarea>
                         </div>
                         <div className="flex justify-end">
                           <button type="submit" className="px-6 py-2.5 bg-sky-600 text-white text-xs font-bold rounded-xl shadow-md">Publikasikan Materi</button>
@@ -1376,23 +1416,42 @@ export default function DianMathLabApp() {
                     </div>
                   )}
 
+                  {/* TAMPILAN KUMPULAN MATERI BERBENTUK BOX MENARIK */}
                   <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
                     <div>
                       <h3 className="text-lg font-black text-sky-900 flex items-center gap-2"><BookOpen className="text-sky-600" size={20} /> Kumpulan Materi UTBK PK PM</h3>
                       <p className="text-xs text-slate-500">Modul ringkas dan panduan belajar dari tentor.</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {utbkMaterials.length === 0 ? (
                         <p className="text-xs text-slate-400 italic py-6">Belum ada materi yang diunggah.</p>
                       ) : (
                         utbkMaterials.map((m) => (
-                          <div key={m.id} className="p-5 bg-sky-50/50 border border-sky-200 rounded-3xl space-y-3 relative group shadow-xs">
-                            <span className="text-[10px] bg-sky-200 text-sky-800 px-2.5 py-0.5 rounded-full font-bold">{m.category}</span>
-                            <h4 className="font-black text-slate-900 text-sm">{m.title}</h4>
-                            <p className="text-xs text-slate-600 leading-relaxed">{m.description}</p>
-                            {(userRole === 'admin' || userRole === 'tutor') && (
-                              <button onClick={() => handleDeleteMaterial(m.id)} className="absolute top-4 right-4 p-1.5 bg-rose-50 text-rose-600 rounded-lg"><Trash2 size={12} /></button>
+                          <div key={m.id} className="bg-white border border-sky-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative group">
+                            {m.thumbnail_url && (
+                              <div className="h-40 overflow-hidden bg-sky-50">
+                                <img src={m.thumbnail_url} alt={m.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+                              </div>
                             )}
+                            <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                              <div className="space-y-2">
+                                <span className="text-[10px] bg-sky-100 text-sky-800 px-2.5 py-1 rounded-full font-bold">{m.category}</span>
+                                <h4 className="font-black text-slate-900 text-base">{m.title}</h4>
+                                <p className="text-xs text-slate-600 leading-relaxed">{m.description}</p>
+                              </div>
+                              <div className="pt-3 flex items-center justify-between border-t border-sky-100">
+                                {m.file_url ? (
+                                  <a href={m.file_url} download="materi_utbk.pdf" className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-sky-700">
+                                    <Download size={14} /> Download PDF
+                                  </a>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 italic">Modul Teks</span>
+                                )}
+                                {(userRole === 'admin' || userRole === 'tutor') && (
+                                  <button onClick={() => handleDeleteMaterial(m.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Materi"><Trash2 size={14} /></button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         ))
                       )}
@@ -1413,11 +1472,8 @@ export default function DianMathLabApp() {
                             <input type="text" placeholder="Contoh: TO Akbar SNBT 2026" value={infoTitle} onChange={(e) => setInfoTitle(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white" required />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-sky-900 mb-1">Kategori</label>
-                            <select value={infoCategory} onChange={(e) => setInfoCategory(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold">
-                              <option value="Try Out Instagram">Try Out Instagram</option>
-                              <option value="Jalur Mandiri PTN">Jalur Mandiri PTN</option>
-                            </select>
+                            <label className="block text-xs font-bold text-sky-900 mb-1">Kategori (Ketik Bebas)</label>
+                            <input type="text" placeholder="Contoh: Try Out Instagram / Jalur Mandiri" value={infoCategory} onChange={(e) => setInfoCategory(e.target.value)} className="w-full px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold" required />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-sky-900 mb-1">Tautan / Link Medsos / Pendaftaran</label>
@@ -1450,7 +1506,7 @@ export default function DianMathLabApp() {
                               </a>
                             )}
                             {(userRole === 'admin' || userRole === 'tutor') && (
-                              <button onClick={() => handleDeleteInfo(inf.id)} className="absolute top-4 right-4 p-1.5 bg-rose-50 text-rose-600 rounded-lg"><Trash2 size={12} /></button>
+                              <button onClick={() => handleDeleteInfo(inf.id)} className="absolute top-4 right-4 p-1.5 bg-rose-50 text-rose-600 rounded-lg" title="Hapus Info"><Trash2 size={12} /></button>
                             )}
                           </div>
                         ))
@@ -1620,7 +1676,7 @@ export default function DianMathLabApp() {
                             </select>
                           </div>
                         )}
-                        <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
+                        <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Siswa"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   );
@@ -1690,7 +1746,7 @@ export default function DianMathLabApp() {
                           <Clock className="text-sky-500" size={14} /> Pukul <strong>{item.start_time}</strong> s.d <strong>{item.end_time}</strong>
                         </p>
                       </div>
-                      <button onClick={() => handleDeleteSchedule(item.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
+                      <button onClick={() => handleDeleteSchedule(item.id)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Jadwal"><Trash2 size={16} /></button>
                     </div>
                   );
                 })}
@@ -1699,7 +1755,7 @@ export default function DianMathLabApp() {
           </div>
           )}
 
-          {/* MENU PRESENSI LENGKAP DENGAN FILTER & PAGINATION */}
+          {/* MENU PRESENSI */}
           {activeMenu === 'presence' && (
             <div className="space-y-6 transition-all duration-500 ease-in-out">
               {(userRole === 'tutor' || userRole === 'admin') && (

@@ -46,7 +46,7 @@ export default function DianMathLabApp() {
   // State Modal Interaktif Custom yang Dipercantik
   const [modalConfig, setModalConfig] = useState({ show: false, title: '', message: '', type: 'info', onConfirm: null });
 
-  // State Floating WhatsApp Menu
+  // State Floating WhatsApp Menu (Diatur false agar tertutup dulu di awal)
   const [showWaMenu, setShowWaMenu] = useState(false);
 
   // State Data Siswa
@@ -545,93 +545,93 @@ export default function DianMathLabApp() {
               </div>
               <div className="flex items-center justify-between text-xs">
                 <button type="button" onClick={() => { setAuthMode('forgot'); setAuthMessage(''); }} className="text-sky-600 font-semibold hover:underline">Lupa sandi?</button>
-              </div>
-              <button type="submit" disabled={isLoading} className="w-full py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-sky-500/30 transition-all duration-500 transform active:scale-95">
-                {isLoading ? 'Memproses...' : 'Masuk ke Dashboard'}
-              </button>
-              <div className="text-center pt-2">
-                <p className="text-xs text-slate-600">Belum punya akun? <button type="button" onClick={() => { setAuthMode('register'); setAuthMessage(''); }} className="text-sky-600 font-bold hover:underline">Daftar di sini</button></p>
-              </div>
-            </form>
-          )}
-
-          {authMode === 'register' && (
-            <form onSubmit={handleRegister} className="space-y-4 transition-all duration-500 ease-in-out">
-              <div className="bg-sky-50 p-3 rounded-2xl border border-sky-200 text-xs text-sky-900 space-y-1">
-                <p className="font-bold flex items-center gap-1"><Sparkles className="text-sky-600" size={14} /> Informasi Aktivasi Email:</p>
-                <p className="text-[11px] text-slate-600">Setelah mendaftar, sistem akan mengirimkan <strong>tautan aktivasi</strong> ke email Anda. Pastikan untuk membuka email dan klik tautan tersebut agar akun dapat digunakan untuk login.</p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-sky-900 mb-1.5">Pilih Peran (Role)</label>
-                <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500">
-                  <option value="client">Klien / Siswa</option>
-                  <option value="tutor">Tutor Matematika</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-sky-900 mb-1.5">Email Aktif</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500" required />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-sky-900 mb-1.5">Kata Sandi Baru</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500" required />
-              </div>
-              <button type="submit" disabled={isLoading} className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all duration-500">
-                {isLoading ? 'Memeriksa & Mengirim...' : 'Daftar Akun Baru & Kirim Email Aktivasi'}
-              </button>
-              <div className="text-center pt-2">
-                <button type="button" onClick={() => { setAuthMode('login'); setAuthMessage(''); }} className="text-xs text-sky-600 font-bold hover:underline">Kembali ke Login</button>
-              </div>
-            </form>
-          )}
-
-          {authMode === 'forgot' && (
-            <form onSubmit={handleForgotPassword} className="space-y-4 transition-all duration-500 ease-in-out">
-              <p className="text-xs text-slate-600">Masukkan email terdaftar. Kami akan mengirimkan tautan pemulihan sandi resmi.</p>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500" required />
-              <button type="submit" disabled={isLoading} className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-bold transition-all duration-500">Kirim Instruksi</button>
-              <button type="button" onClick={() => { setAuthMode('login'); setAuthMessage(''); }} className="w-full text-xs text-sky-600 underline">Kembali ke Login</button>
-            </form>
-          )}
-        </div>
-
-        {/* FLOATING WHATSAPP DI HALAMAN LOGIN */}
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-          {showWaMenu && (
-            <div className="mb-3 w-64 bg-white/95 backdrop-blur-md border border-sky-100 rounded-3xl shadow-2xl p-4 space-y-3 transform transition-all duration-300">
-              <div className="flex items-center justify-between border-b border-sky-100 pb-2">
-                  <span className="text-xs font-black text-sky-900">💬 Hubungi Dian Math Lab</span>
-                  <button onClick={() => setShowWaMenu(false)} className="text-slate-400 hover:text-slate-700 text-xs font-bold">✕</button>
-              </div>
-              <div className="space-y-2">
-                  <a href="https://wa.me/6287730655553?text=Halo%20Founder%20Cantik%20Dian%20Math%20Lab,%20saya%20ingin%20berkonsultasi%20mengenai%20les%20privat." target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl transition-all duration-300 group">
-                    <div>
-                      <p className="text-xs font-bold text-emerald-950">👩‍💼 Founder Cantik</p>
-                      <p className="text-[10px] text-emerald-600">0877-3065-5553</p>
-                    </div>
-                    <span className="text-xs bg-emerald-500 text-white px-2.5 py-1 rounded-xl font-bold shadow-sm">Chat</span>
-                  </a>
-                  <a href="https://wa.me/62882005679302?text=Halo%20Admin%20Ganteng%20Dian%20Math%20Lab,%20saya%20ingin%20menanyakan%20jadwal%20dan%20pendaftaran%20les." target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2.5 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-2xl transition-all duration-300 group">
-                    <div>
-                      <p className="text-xs font-bold text-sky-950">👨‍💻 Admin Ganteng</p>
-                      <p className="text-[10px] text-sky-600">0882-0056-79302</p>
-                    </div>
-                    <span className="text-xs bg-sky-500 text-white px-2.5 py-1 rounded-xl font-bold shadow-sm">Chat</span>
-                  </a>
-              </div>
             </div>
-          )}
-          <button onClick={() => setShowWaMenu(!showWaMenu)} className="relative group flex items-center justify-center w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white rounded-full shadow-2xl shadow-emerald-500/50 transition-all duration-300 transform hover:scale-110 active:scale-95" title="Butuh Bantuan? Hubungi Kami">
-            <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-75 animate-ping pointer-events-none" style={{ animationDuration: '3s' }}></span>
-            <svg className="w-7 h-7 relative z-10 fill-current" viewBox="0 0 24 24">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.124-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-            </svg>
-          </button>
-        </div>
+            <button type="submit" disabled={isLoading} className="w-full py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-sky-500/30 transition-all duration-500 transform active:scale-95">
+              {isLoading ? 'Memproses...' : 'Masuk ke Dashboard'}
+            </button>
+            <div className="text-center pt-2">
+              <p className="text-xs text-slate-600">Belum punya akun? <button type="button" onClick={() => { setAuthMode('register'); setAuthMessage(''); }} className="text-sky-600 font-bold hover:underline">Daftar di sini</button></p>
+            </div>
+          </form>
+        )}
+
+        {authMode === 'register' && (
+          <form onSubmit={handleRegister} className="space-y-4 transition-all duration-500 ease-in-out">
+            <div className="bg-sky-50 p-3 rounded-2xl border border-sky-200 text-xs text-sky-900 space-y-1">
+              <p className="font-bold flex items-center gap-1"><Sparkles className="text-sky-600" size={14} /> Informasi Aktivasi Email:</p>
+              <p className="text-[11px] text-slate-600">Setelah mendaftar, sistem akan mengirimkan <strong>tautan aktivasi</strong> ke email Anda. Pastikan untuk membuka email dan klik tautan tersebut agar akun dapat digunakan untuk login.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-sky-900 mb-1.5">Pilih Peran (Role)</label>
+              <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500">
+                <option value="client">Klien / Siswa</option>
+                <option value="tutor">Tutor Matematika</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-sky-900 mb-1.5">Email Aktif</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500" required />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-sky-900 mb-1.5">Kata Sandi Baru</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimal 6 karakter" className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500" required />
+            </div>
+            <button type="submit" disabled={isLoading} className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all duration-500">
+              {isLoading ? 'Memeriksa & Mengirim...' : 'Daftar Akun Baru & Kirim Email Aktivasi'}
+            </button>
+            <div className="text-center pt-2">
+              <button type="button" onClick={() => { setAuthMode('login'); setAuthMessage(''); }} className="text-xs text-sky-600 font-bold hover:underline">Kembali ke Login</button>
+            </div>
+          </form>
+        )}
+
+        {authMode === 'forgot' && (
+          <form onSubmit={handleForgotPassword} className="space-y-4 transition-all duration-500 ease-in-out">
+            <p className="text-xs text-slate-600">Masukkan email terdaftar. Kami akan mengirimkan tautan pemulihan sandi resmi.</p>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" className="w-full px-4 py-2.5 text-xs bg-sky-50/50 border border-sky-200 rounded-xl text-slate-800 transition-all duration-500" required />
+            <button type="submit" disabled={isLoading} className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-bold transition-all duration-500">Kirim Instruksi</button>
+            <button type="button" onClick={() => { setAuthMode('login'); setAuthMessage(''); }} className="w-full text-xs text-sky-600 underline">Kembali ke Login</button>
+          </form>
+        )}
       </div>
-    );
-  }
+
+      {/* FLOATING WHATSAPP DI HALAMAN LOGIN */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        {showWaMenu && (
+          <div className="mb-3 w-64 bg-white/95 backdrop-blur-md border border-sky-100 rounded-3xl shadow-2xl p-4 space-y-3 transform transition-all duration-300">
+            <div className="flex items-center justify-between border-b border-sky-100 pb-2">
+                <span className="text-xs font-black text-sky-900">💬 Hubungi Dian Math Lab</span>
+                <button onClick={() => setShowWaMenu(false)} className="text-slate-400 hover:text-slate-700 text-xs font-bold">✕</button>
+            </div>
+            <div className="space-y-2">
+                <a href="https://wa.me/6287730655553?text=Halo%20Founder%20Cantik%20Dian%20Math%20Lab,%20saya%20ingin%20berkonsultasi%20mengenai%20les%20privat." target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl transition-all duration-300 group">
+                  <div>
+                    <p className="text-xs font-bold text-emerald-950">👩‍💼 Founder Cantik</p>
+                    <p className="text-[10px] text-emerald-600">0877-3065-5553</p>
+                  </div>
+                  <span className="text-xs bg-emerald-500 text-white px-2.5 py-1 rounded-xl font-bold shadow-sm">Chat</span>
+                </a>
+                <a href="https://wa.me/62882005679302?text=Halo%20Admin%20Ganteng%20Dian%20Math%20Lab,%20saya%20ingin%20menanyakan%20jadwal%20dan%20pendaftaran%20les." target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2.5 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-2xl transition-all duration-300 group">
+                  <div>
+                    <p className="text-xs font-bold text-sky-950">👨‍💻 Admin Ganteng</p>
+                    <p className="text-[10px] text-sky-600">0882-0056-79302</p>
+                  </div>
+                  <span className="text-xs bg-sky-500 text-white px-2.5 py-1 rounded-xl font-bold shadow-sm">Chat</span>
+                </a>
+            </div>
+          </div>
+        )}
+        <button onClick={() => setShowWaMenu(!showWaMenu)} className="relative group flex items-center justify-center w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white rounded-full shadow-2xl shadow-emerald-500/50 transition-all duration-300 transform hover:scale-110 active:scale-95" title="Butuh Bantuan? Hubungi Kami">
+          <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-75 animate-ping pointer-events-none" style={{ animationDuration: '3s' }}></span>
+          <svg className="w-7 h-7 relative z-10 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.124-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
 
   const userRole = userProfile.role || session.user.user_metadata?.role || 'client';
   const userEmail = session.user.email;
@@ -800,45 +800,45 @@ export default function DianMathLabApp() {
                                   <div>
                                     <p className="font-bold text-slate-800">{st.full_name}</p>
                                     <p className="text-[10px] text-slate-500">{st.grade} • {st.subject}</p>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
                           )}
                         </div>
-                    </div>
-                  );
-                })}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
-              <div>
-                <h3 className="text-lg font-black text-sky-900">Manajemen Semua Akun & Hak Akses</h3>
-                <p className="text-xs text-slate-500">Ubah role atau hapus akun pengguna di database.</p>
-              </div>
-              <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
-                {allProfiles.map((p) => (
-                  <div key={p.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
-                    <div>
-                      <p className="font-bold text-xs text-slate-900">{p.full_name || 'Tanpa Nama'} ({p.email})</p>
-                      <p className="text-[10px] text-sky-600 font-bold uppercase">Role: {p.role}</p>
+              <div className="bg-white rounded-3xl border border-sky-100 p-8 space-y-6 shadow-sm">
+                <div>
+                  <h3 className="text-lg font-black text-sky-900">Manajemen Semua Akun & Hak Akses</h3>
+                  <p className="text-xs text-slate-500">Ubah role atau hapus akun pengguna di database.</p>
+                </div>
+                <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
+                  {allProfiles.map((p) => (
+                    <div key={p.id} className="p-4 flex justify-between items-center hover:bg-sky-50/40">
+                      <div>
+                        <p className="font-bold text-xs text-slate-900">{p.full_name || 'Tanpa Nama'} ({p.email})</p>
+                        <p className="text-[10px] text-sky-600 font-bold uppercase">Role: {p.role}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select value={p.role || 'client'} onChange={(e) => handleUpdateUserRole(p.id, e.target.value)} className="px-3 py-1.5 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
+                          <option value="client">Klien</option>
+                          <option value="tutor">Tutor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        {p.id !== session.user.id && (
+                          <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <select value={p.role || 'client'} onChange={(e) => handleUpdateUserRole(p.id, e.target.value)} className="px-3 py-1.5 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
-                        <option value="client">Klien</option>
-                        <option value="tutor">Tutor</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      {p.id !== session.user.id && (
-                        <button onClick={() => handleDeleteUserAccount(p.id, p.email)} className="p-2 bg-rose-50 text-rose-600 rounded-xl" title="Hapus Akun"><Trash2 size={14} /></button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
           )}
 
           {/* MENU DATA SISWA & PINDAH TUTOR */}
@@ -853,7 +853,7 @@ export default function DianMathLabApp() {
                   </p>
                 </div>
                 <button onClick={() => setIsAddingStudent(true)} className="px-5 py-2.5 bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"><Plus size={16} /> Tambah Siswa</button>
-            </div>
+              </div>
 
               {isAddingStudent && (
                 <form onSubmit={handleAddStudent} className="bg-sky-50/50 p-6 rounded-2xl border border-sky-200 space-y-4">
@@ -901,39 +901,39 @@ export default function DianMathLabApp() {
                     <button type="submit" className="px-5 py-2 bg-sky-500 text-white text-xs font-bold rounded-xl">Simpan Siswa</button>
                   </div>
                 </form>
-            )}
+              )}
 
-            <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
-              {students.map((s) => {
-                const currentTutor = tutorsList.find(t => t.id === s.tutor_id);
-                return (
-                  <div key={s.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-sky-50/40">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                        {s.full_name} <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">{s.grade}</span>
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Mail className="text-sky-400" size={12} /> {s.email || 'Email belum diatur'} • Fokus: <strong>{s.subject || 'Matematika Umum'}</strong> • Tutor: <strong>{currentTutor?.full_name || 'Tutor Utama'}</strong></p>
+              <div className="divide-y divide-sky-100 border border-sky-100 rounded-2xl overflow-hidden">
+                {students.map((s) => {
+                  const currentTutor = tutorsList.find(t => t.id === s.tutor_id);
+                  return (
+                    <div key={s.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-sky-50/40">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                          {s.full_name} <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">{s.grade}</span>
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Mail className="text-sky-400" size={12} /> {s.email || 'Email belum diatur'} • Fokus: <strong>{s.subject || 'Matematika Umum'}</strong> • Tutor: <strong>{currentTutor?.full_name || 'Tutor Utama'}</strong></p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {userRole === 'admin' && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-600">Pindah Tutor:</span>
+                            <select value={s.tutor_id || ''} onChange={(e) => handleTransferStudentTutor(s.id, e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
+                              <option value="">-- Pilih Tutor --</option>
+                              {tutorsList.map(t => <option key={t.id} value={t.id}>{t.full_name || t.email}</option>)}
+                            </select>
+                          </div>
+                        )}
+                        <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
+                      </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      {userRole === 'admin' && (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-slate-600">Pindah Tutor:</span>
-                          <select value={s.tutor_id || ''} onChange={(e) => handleTransferStudentTutor(s.id, e.target.value)} className="px-3 py-2 text-xs border border-sky-200 rounded-xl bg-white font-bold text-sky-900">
-                            <option value="">-- Pilih Tutor --</option>
-                            {tutorsList.map(t => <option key={t.id} value={t.id}>{t.full_name || t.email}</option>)}
-                          </select>
-                        </div>
-                      )}
-                      <button onClick={() => handleDeleteStudent(s.id)} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><Trash2 size={16} /></button>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
-          </div>
-        </div>
-        )}
+          )}
 
           {/* MENU JADWAL */}
           {activeMenu === 'schedule' && (userRole === 'tutor' || userRole === 'admin') && (
